@@ -1,20 +1,14 @@
 {% extends "baseControl.html" %}
 {% load static %}
-{% block titulo %} Administración de Empleados {% endblock %}
+{% block titulo %} Administración de Usuarios {% endblock %}
 {% block content %}
 <div class="container pt-1">
-    <h2 class="fw-bold text-secondary">Administración de Empleados</h2>    
+    <h2 class="fw-bold text-secondary">Administración de Usuarios</h2>    
 </div>
 <div class="container pt-4 d-none d-sm-block">
     <div class="row ">
         <div class="col-lg-4">
             <div class="p-3 border rounded text-secondary">Empleados registrados:</div>
-        </div>
-        <div class="col-lg-4">
-            <div class="p-3 border rounded text-secondary">Empleados habilitados:</div>
-        </div>
-        <div class="col-lg-4">
-            <div class="p-3 border rounded text-secondary">Empleados inactivos: </div>
         </div>
     </div>
 </div>
@@ -171,7 +165,7 @@
                         </div>
                     </div>
                     <div class="col-6">
-                        <p class="form-label">Seleccione el cargo del empleado: </label>
+                        <p class="form-label">Seleccione el rol del usuario: </label>
                     </div>
                     <div class="col-lg-6">
                         <select class="form-select" id="id_select_rol" required>
@@ -293,7 +287,7 @@
     //Presionar el boton agregar empleados
     document.getElementById("btn_agregar_empleado").addEventListener("click", function(){
         tituloModal.innerHTML=null;
-        tituloModal.innerHTML="Agregar Empleado";
+        tituloModal.innerHTML="Agregar Usuario";
         $('#guardar_empleado').show(); 
         $('#btn_editar_empleado').hide();
         $('#id_select_sexo').val("");

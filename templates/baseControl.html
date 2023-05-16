@@ -55,7 +55,111 @@
                 <div class="d-flex align-items-start">
                   <span class="material-symbols-outlined">badge</span>
                   <div class="px-2 txt_link" id="txt_link">
-                    Usuarios
+                    Gestión Usuarios
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_re01">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RE-01
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_re02">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RE-02
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_rt01">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RT-01
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_rt02">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RT-02
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_rt03">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RT-03
+                  </div>
+                </div>
+              </a>
+            </li>
+            {% endif %}
+            {% if request.user.roles.codigo_rol == "ROL_ESTRATEGICO" %}
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_re01">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RE-01
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_re02">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RE-02
+                  </div>
+                </div>
+              </a>
+            </li>
+            {% endif %}
+            {% if request.user.roles.codigo_rol == "ROL_TACTICO" %}
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_rt01">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RT-01
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_rt02">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RT-02
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'vistaGestionEmpleados' %}" class="nav-link text-white" id="side_rt03">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">assignment</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    RT-03
                   </div>
                 </div>
               </a>
