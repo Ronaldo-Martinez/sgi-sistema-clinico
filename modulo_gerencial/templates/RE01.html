@@ -1,0 +1,14 @@
+{% extends "baseControl.html" %}
+{% load static %}
+{% block titulo %} Reporte Estrategico 01 {% endblock %}
+{% block content %}
+<div class="container pt-1">
+    <h2 class="fw-bold text-secondary">Reporte de Análisis de Tendencias de Exámenes Realizados</h2>    
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    $( "#side_re01" ).addClass( "active" );
+    url="{% url 'vistaRE01' %}";
+  </script>
+{% endblock %}
