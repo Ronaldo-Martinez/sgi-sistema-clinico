@@ -1,11 +1,6 @@
 from django.shortcuts import render
 
 # Create your views here.
-def menuEstrategico(request):
-    return render(request, 'mestrategico.html')
-
-def menuTactico(request):
-    return render(request, 'mtactico.html')
 
 def estrategico01(request):
     return render(request, 'RE01.html')

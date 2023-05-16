@@ -34,11 +34,11 @@ class LoginView(View):
         if request.user.roles.codigo_rol=='ROL_ADMIN':
             return redirect('vistaGestionEmpleados')
         
-        if request.user.roles.codigo_rol=='ROL_SECRETARIA' or request.user.roles.codigo_rol=='ROL_DOCTOR' or request.user.roles.codigo_rol=='ROL_ENFERMERA':
-            return redirect('sala_consulta')
+        if request.user.roles.codigo_rol=='ROL_ESTRATEGICO':
+            return redirect('menuEstrategico')
         
-        if request.user.roles.codigo_rol=='ROL_LIC_LABORATORIO':
-            return redirect('inicio_lab')
+        if request.user.roles.codigo_rol=='ROL_TACTICO':
+            return redirect('menuTactico')
 
     def post(self, request, *args, **kwargs):
         email = request.POST.get("usuario")
@@ -53,10 +53,10 @@ class LoginView(View):
             if url is None:
                 if request.user.roles.codigo_rol=='ROL_ADMIN':
                     return redirect('vistaGestionEmpleados')
-                elif request.user.roles.codigo_rol=='ROL_SECRETARIA' or request.user.roles.codigo_rol=='ROL_DOCTOR' or request.user.roles.codigo_rol=='ROL_ENFERMERA':
-                    return redirect('sala_consulta')
-                elif request.user.roles.codigo_rol=='ROL_LIC_LABORATORIO':
-                    return redirect('inicio_lab')
+                elif request.user.roles.codigo_rol=='ROL_ESTRATEGICO':
+                    return redirect('menuEstrategico')
+                elif request.user.roles.codigo_rol=='ROL_TACTICO':
+                    return redirect('menuTactico')
             ##si hay una url en next?
             else:
                 return redirect(url)
@@ -92,10 +92,10 @@ def logearse(request):
                 mensaje="Estas Logeado"
                 if request.user.roles.codigo_rol=='ROL_ADMIN':
                     return redirect('vistaGestionEmpleados')
-                elif request.user.roles.codigo_rol=='ROL_SECRETARIA' or request.user.roles.codigo_rol=='ROL_DOCTOR' or request.user.roles.codigo_rol=='ROL_ENFERMERA':
-                    return redirect('sala_consulta')
-                elif request.user.roles.codigo_rol=='ROL_LIC_LABORATORIO':
-                    return redirect('inicio_lab')
+                elif request.user.roles.codigo_rol=='ROL_ESTRATEGICO':
+                    return redirect('menuEstrategico')
+                elif request.user.roles.codigo_rol=='ROL_TACTICO':
+                    return redirect('menuTactico')
             else:
                 mensaje="usuario/contraseña no válido"
         else:
@@ -273,6 +273,26 @@ def editar_empleado(request):
     else:
         data['data']="Aceso Denegados"
     return JsonResponse(data, safe=False)
+
+@login_required(login_url='/login/')        
+def menu_estrategico(request):
+    if request.user.roles.codigo_rol=='ROL_ESTRATEGICO':
+        #Empleado.objects.permissions_doctor()
+        #print(request.user.get_user_permissions())
+        roles = Rol.objects.all()
+        return render(request,"mestrategico.html", {"Rol":roles})
+    else:
+        return render(request,"error403.html")
+    
+@login_required(login_url='/login/')        
+def menu_tactico(request):
+    if request.user.roles.codigo_rol=='ROL_TACTICO':
+        #Empleado.objects.permissions_doctor()
+        #print(request.user.get_user_permissions())
+        roles = Rol.objects.all()
+        return render(request,"mtactico.html", {"Rol":roles})
+    else:
+        return render(request,"error403.html")
 
 @login_required(login_url='/login/')        
 def vista_adminitracion_empleados(request):
