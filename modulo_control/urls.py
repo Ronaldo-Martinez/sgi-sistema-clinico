@@ -6,6 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
 from modulo_control.views.login import registrar_empleado,editar_empleado,vista_adminitracion_empleados,lista_empleados, get_empleado
 from modulo_control.views.perfil import Perfil
+from modulo_gerencial.views import estrategico01,estrategico02,tactico01,tactico02,tactico03
 
 urlpatterns = [
     path('perfil', Perfil.as_view(), name='perfil'),
@@ -18,7 +19,11 @@ urlpatterns = [
     path('empleados/', vista_adminitracion_empleados, name= 'vistaGestionEmpleados'),
     path('empleados/lista/', lista_empleados, name="listaEmpleados"),
     path('empleados/lista/<str:cod_empleado>', get_empleado, name='get_empleado'),
-
+    path('reportes/RE01/',estrategico01, name= 'vistaRE01'),
+    path('reportes/RE02/',estrategico02, name= 'vistaRE02'),
+    path('reportes/RT01/',tactico01, name= 'vistaRT01'),
+    path('reportes/RT02/',tactico02, name= 'vistaRT02'),
+    path('reportes/RT03/',tactico03, name= 'vistaRT03'),
     
     
 ]

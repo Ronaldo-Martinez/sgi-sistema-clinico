@@ -1,0 +1,14 @@
+{% extends "baseControl.html" %}
+{% load static %}
+{% block titulo %} Reporte Táctico 03 {% endblock %}
+{% block content %}
+<div class="container pt-1">
+    <h2 class="fw-bold text-secondary">Reporte de Tiempo de Atención Promedio por Consultas</h2>    
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    $( "#side_rt03" ).addClass( "active" );
+    url="{% url 'vistaRT03' %}";
+  </script>
+{% endblock %}

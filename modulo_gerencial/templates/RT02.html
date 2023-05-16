@@ -1,0 +1,14 @@
+{% extends "baseControl.html" %}
+{% load static %}
+{% block titulo %} Reporte Táctico 02 {% endblock %}
+{% block content %}
+<div class="container pt-1">
+    <h2 class="fw-bold text-secondary">Reporte de Exámenes de Laboratorio</h2>    
+</div>
+{% endblock %}
+{% block js %}
+<script>
+    $( "#side_rt02" ).addClass( "active" );
+    url="{% url 'vistaRT02' %}";
+  </script>
+{% endblock %}
