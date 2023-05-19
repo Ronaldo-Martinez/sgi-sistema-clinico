@@ -3,7 +3,30 @@
 {% block titulo %} Reporte Táctico 01 {% endblock %}
 {% block content %}
 <div class="container pt-1">
-    <h2 class="fw-bold text-secondary">Reporte de Consultas Diarias</h2>    
+    <h2 class="fw-bold text-secondary text-center" style="padding-top: 50px;">Reporte de Consultas Diarias</h2>    
+</div>
+<br>
+<div class="row">
+  <div class="card col-md-8 offset-md-2 offset-md-2">
+    <div class="row">
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" class="form-control" id="fecha" name="fecha">
+          </div>
+          <br>
+          <div class="form-group">
+            <label>Nombre Doctor</label>
+            <input type="text" class="form-control" id="doctor" name="doctor">
+          </div>
+          <br>
+          <button class="btn btn-dark" type="submit">Consultar</button>
+          
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 {% block js %}
