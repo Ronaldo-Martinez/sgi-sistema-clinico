@@ -3,7 +3,36 @@
 {% block titulo %} Reporte Táctico 02 {% endblock %}
 {% block content %}
 <div class="container pt-1">
-    <h2 class="fw-bold text-secondary">Reporte de Exámenes de Laboratorio</h2>    
+    <h2 class="fw-bold text-secondary text-center" style="padding-top: 50px;">Reporte de Exámenes de Laboratorio</h2>    
+</div>
+<br>
+<div class="row">
+  <div class="card col-md-8 offset-md-2 offset-md-2">
+    <div class="row">
+      <div class="card-body">
+        <form>
+          <div class="form-group">
+            <label>Fecha</label>
+            <input type="date" class="form-control" id="fecha" name="fecha">
+          </div>
+          <br>
+          <div class="form-group">
+            <label>Tipo de Examen</label>
+            <select class="form-select" id="idExamen" name="idExamen">
+              <option value="">--Seleccione una categoria--</option>
+              <option>1</option>
+              <option>1</option>
+              <option>1</option>
+
+            </select>
+          </div>
+          <br>
+          <button class="btn btn-dark" type="submit">Consultar</button>
+          
+        </form>
+      </div>
+    </div>
+  </div>
 </div>
 {% endblock %}
 {% block js %}
