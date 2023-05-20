@@ -2,36 +2,95 @@
 {% load static %}
 {% block titulo %} Reporte Táctico 01 {% endblock %}
 {% block content %}
-<div class="container pt-1">
-    <h2 class="fw-bold text-secondary text-center" style="padding-top: 50px;">Reporte de Consultas Diarias</h2>    
-</div>
-<br>
-<div class="row">
-  <div class="card col-md-8 offset-md-2 offset-md-2">
-    <div class="row">
-      <div class="card-body">
-        <form>
-          <div class="form-group">
-            <label>Fecha</label>
-            <input type="date" class="form-control" id="fecha" name="fecha">
-          </div>
-          <br>
-          <div class="form-group">
-            <label>Nombre Doctor</label>
-            <input type="text" class="form-control" id="doctor" name="doctor">
-          </div>
-          <br>
-          <button class="btn btn-dark" type="submit">Consultar</button>
-          
-        </form>
+
+  <div class="imagen" >
+    <img id="logo" src="../../static/img/encabezadoReceta.png">
+  </div>
+  <div class="container pt-1">
+      <h2 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Reporte de Consultas Diarias</h2>    
+  </div>
+  <br>
+  <div class="row" id="formulario">
+    <div class="card col-md-8 offset-md-2 offset-md-2">
+      <div class="row">
+        <div class="card-body" >
+          <form>
+            <div class="form-group">
+              <label>Fecha</label>
+              <input type="date" class="form-control" id="fecha" name="fecha">
+            </div>
+            <br>
+            <!---
+            <div class="form-group">
+              <label>Nombre Doctor</label>
+              <input type="text" class="form-control" id="doctor" name="doctor">
+            </div>
+            <br>
+            -->
+            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
+            
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
+  <div id="resultado" style="display: none;">
+    <h3 class="fw-bold text-primary-dark text-center" >Reporte de todos los médicos fecha</h2>
+    <h3 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las 19:30 </h3>
+    <br>
+    <table class = "table table-striped">
+      <thead>
+        <tr>
+            <th>Médico</th>
+            <th>Pacientes Atendidos</th>
+            <th>Pacientes con Signos Vitales Tomados</th>
+            <th>Ingresos Diarios</th>
+        </tr>
+    </thead>
+    <tbody>
+        <tr>
+            <td></td>
+            <td></td>
+            <td></td>
+            <td></td>
+          </tr>
+    </tbody>
+
+    </table>
+
+  </div>
+
+<style>
+
+h2,h3{
+  color: #000034;
+}
+  .imagen{
+   
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+    
+
+  }
+  #logo{
+
+    width: 70%;
+    margin-left: 15%;
+    
+  }
+</style>
 {% endblock %}
 {% block js %}
 <script>
     $( "#side_rt01" ).addClass( "active" );
     url="{% url 'vistaRT01' %}";
+
+    function mostrarResultado() {
+      document.getElementById('formulario').style.display = 'none';
+      document.getElementById('resultado').style.display = 'block';
+
+    }
+
   </script>
 {% endblock %}
