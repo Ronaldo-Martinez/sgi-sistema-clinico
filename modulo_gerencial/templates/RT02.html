@@ -3,70 +3,91 @@
 {% block titulo %} Reporte Táctico 02 {% endblock %}
 {% block content %}
 
-<div class="imagen" >
-  <img id="logo" src="../../static/img/encabezadoReceta.png">
-</div>
 <div class="container pt-1">
-    <h2 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Reporte de Exámenes de Laboratorio</h2>    
-</div>
-<br>
-<div class="row" id="formulario">
-  <div class="card col-md-8 offset-md-2 offset-md-2">
-    <div class="row">
-      <div class="card-body" >
-        <form>
-          <div class="form-group">
-            <label>Fecha Inicio</label>
-            <input type="date" class="form-control" id="fechaInicio" name="fechaFin">
-          </div>
-          <br>
-          <div class="form-group">
-            <label>Fecha Fin</label>
-            <input type="date" class="form-control" id="fechaFin" name="fechaFin">
-          </div>
-          <br>
-          <div class="form-group">
-            <label>Tipo de Examen</label>
-            <select class="form-select" id="idExamen" name="idExamen">
-              <option value="">--Seleccione una categoria--</option>
-              <option>1</option>
-              <option>1</option>
-              <option>1</option>
-
-            </select>
-          </div>
-          <br>
-          <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
-          
-        </form>
+  <!--Encabezado-->
+  <div class="card border border-bottom-0">
+    <div class="card-header">
+      <div class="row">
+        <div class="col-2 d-flex align-items-center justify-content-center">
+          <img id="logo" class="rounded mx-auto" src="../../static/img/logo_clinica.png">
+        </div>
+        <div class="col-8 d-flex align-items-center justify-content-center">
+          <h2 class="fw-bold text-primary-dark">Clinica Médica Económica de Cojutepeque</h2>
+        </div>
+        <div class="col-2 d-flex align-items-center justify-content-center">
+          <img id="logo" class="rounded mx-auto" src="../../static/img/logo_lab.png">
+        </div>
       </div>
     </div>
+    <!--Titulo del reporte-->
+    <div class="card-body">
+      <h2 class="fw-bold text-primary-dark text-center">Reporte de Exámenes de Laboratorio</h2>
+    </div>
+    <!--Formulario del reporte-->
+    <div class="card-body" id="formulario">
+      <div class="card col-md-12 ">
+        <div class="card-body" >
+          <form>
+            <div class="form-group">
+              <label>Fecha Inicio</label>
+              <input type="date" class="form-control" id="fechaInicio" name="fechaFin">
+            </div>
+            <br>
+            <div class="form-group">
+              <label>Fecha Fin</label>
+              <input type="date" class="form-control" id="fechaFin" name="fechaFin">
+            </div>
+            <br>
+            <div class="form-group">
+              <label>Tipo de Examen</label>
+              <select class="form-select" id="idExamen" name="idExamen">
+                <option value="">--Seleccione una categoria--</option>
+                <option>1</option>
+                <option>1</option>
+                <option>1</option>
+  
+              </select>
+            </div>
+            <br>
+            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
+            
+          </form>
+        </div>
+      </div>
+    </div>
+    <!--Resultados del reporte-->
+    <div class="card-body" id="resultado" style="display: none;">
+      <div>
+        <h3 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Exámenes de categoria realizados desde el fecha1 hasta fecha2</h2>
+        <h3 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las hora 19:30 </h3>
+        <br>
+        <table class = "table table-striped text-center border" >
+          <thead>
+              <tr>
+                  <th>Fecha</th>
+                  <th>Exámenes Realizados</th>
+                  <th>Resultados Entregados</th>
+                  <th>Ingresos Diarios</th>
+              </tr>
+          </thead>
+          <tbody>
+              <tr>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                </tr>
+          </tbody>
+        </table>
+      </div>
+      <div >
+        <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
+      </div>
+    </div>
+    
   </div>
-</div>
-<div id="resultado" style="display: none;">
-  <h3 class="fw-bold text-primary-dark text-center" >Exámenes de categoria realizados desde el fecha1 hasta fecha2</h2>
-  <h3 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las hora 19:30 </h3>
-  <br>
-  <table class = "table table-striped table-bordered ">
-    <thead >
-      <tr>
-          <th>Fecha</th>
-          <th>Exámenes Realizados</th>
-          <th>Resultados Entregados</th>
-          <th>Ingresos Diarios</th>
-      </tr>
-  </thead>
-  <tbody>
-      <tr>
-          <td></td>
-          <td></td>
-          <td></td>
-          <td></td>
-        </tr>
-  </tbody>
-
-  </table>
-
+  
+  
 </div>
 
 <style>
@@ -98,6 +119,13 @@ color: #000034;
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
 
+    }
+    function nuevoForm(){
+      document.getElementById('resultado').style.display = 'none';
+      document.getElementById('formulario').style.display = 'block';
+      $('#fechaInico').val('');
+      $('#fechaFin').val('');
+      $('#idExamen').val('');
     }
   </script>
 {% endblock %}
