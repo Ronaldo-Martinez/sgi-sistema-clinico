@@ -105,7 +105,7 @@ h2,h3{
 <script>
     $( "#side_rt01" ).addClass( "active" );
     url="{% url 'vistaRT01' %}";
-    
+
     function mostrarResultado() {
       //Si existe una fecha
       fecha=$('#fecha').val();
@@ -124,14 +124,14 @@ h2,h3{
             'fecha': $('#fecha').val(),
           },
           success: function(data){
-            imprimirResultados(data);
-          }
-            
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            consultarMedicos(data);
+          }      
       });
 
     }
     //Función para consultas los datos del reporte
-    function imprimirResultados(data){
+    function imprimirResultados(data, medicos){
       //notificación
       toastr[data.type](data.title);
       //variables
@@ -153,9 +153,13 @@ h2,h3{
       //Imprimiendo las filas
       $('#resultados-informe').html("")
       for (var id in contador) {
+        medico=medicos.filter((empleado)=>{
+          return empleado.codigo_empleado === id;
+        })
+        console.log(medico)
         $('#resultados-informe').append(`
           <tr>
-            <td>${id}</td>
+            <td>${medico[0].nombres} ${medico[0].apellidos}</td>
             <td>${contador[id]}</td>
             <td>${contador[id]}</td>
             <td>$ ${ingresos[id]}</td>
@@ -179,6 +183,20 @@ h2,h3{
       document.getElementById('formulario').style.display = 'block';
       $('#fecha').val('');
     }
-    
+  
+    async function consultarMedicos(datosConsulta){
+      await $.ajax({
+        url: 'http://clinica.code-rm.tk/control/empleados/lista/',
+        type:"GET",
+        dataType: "json",
+        success: function(data){
+          //Filtrando medicos
+          let medicos =data.filter(function(empleado) {
+            return empleado.nombre_rol === 'Doctor';
+          });
+          imprimirResultados(datosConsulta, medicos)
+          }      
+      });
+    }
   </script>
 {% endblock %}
