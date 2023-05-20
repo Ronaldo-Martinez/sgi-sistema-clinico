@@ -3,61 +3,81 @@
 {% block titulo %} Reporte Táctico 01 {% endblock %}
 {% block content %}
 
-  <div class="imagen" >
-    <img id="logo" src="../../static/img/encabezadoReceta.png">
-  </div>
   <div class="container pt-1">
-      <h2 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Reporte de Consultas Diarias</h2>    
-  </div>
-  <br>
-  <div class="row" id="formulario">
-    <div class="card col-md-8 offset-md-2 offset-md-2">
-      <div class="row">
-        <div class="card-body" >
-          <form>
-            <div class="form-group">
-              <label>Fecha</label>
-              <input type="date" class="form-control" id="fecha" name="fecha">
-            </div>
-            <br>
-            <!---
-            <div class="form-group">
-              <label>Nombre Doctor</label>
-              <input type="text" class="form-control" id="doctor" name="doctor">
-            </div>
-            <br>
-            -->
-            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
-            
-          </form>
+    <!--Encabezado-->
+    <div class="card border border-bottom-0">
+      <div class="card-header">
+        <div class="row">
+          <div class="col-2 d-flex align-items-center justify-content-center">
+            <img id="logo" class="rounded mx-auto" src="../../static/img/logo_clinica.png">
+          </div>
+          <div class="col-8 d-flex align-items-center justify-content-center">
+            <h2 class="fw-bold text-primary-dark">Clinica Médica Económica de Cojutepeque</h2>
+          </div>
+          <div class="col-2 d-flex align-items-center justify-content-center">
+            <img id="logo" class="rounded mx-auto" src="../../static/img/logo_lab.png">
+          </div>
         </div>
       </div>
+      <!--Titulo del reporte-->
+      <div class="card-body">
+        <h2 class="fw-bold text-primary-dark text-center">Reporte de Consultas Diarias</h2>
+      </div>
+      <!--Formulario del reporte-->
+      <div class="card-body" id="formulario">
+        <div class="card col-md-12 ">
+          <div class="card-body" >
+            <form>
+              <div class="form-group">
+                <label>Fecha</label>
+                <input type="date" class="form-control" id="fecha" name="fecha">
+              </div>
+              <br>
+              <!---
+              <div class="form-group">
+                <label>Nombre Doctor</label>
+                <input type="text" class="form-control" id="doctor" name="doctor">
+              </div>
+              <br>
+              -->
+              <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
+              
+            </form>
+          </div>
+        </div>
+      </div>
+      <!--Resultados del reporte-->
+      <div class="card-body" id="resultado" style="display: none;">
+        <div>
+          <h3 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Reporte de todos los médicos fecha</h2>
+          <h3 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las 19:30 </h3>
+          <br>
+          <table class = "table table-striped text-center border" >
+            <thead>
+                <tr>
+                    <th>Médico</th>
+                    <th>Pacientes Atendidos</th>
+                    <th>Pacientes con Signos Vitales Tomados</th>
+                    <th>Ingresos Diarios</th>
+                </tr>
+            </thead>
+            <tbody id="resultados-informe">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
     </div>
-  </div>
-  <div id="resultado" style="display: none;">
-    <h3 class="fw-bold text-primary-dark text-center" >Reporte de todos los médicos fecha</h2>
-    <h3 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las 19:30 </h3>
-    <br>
-    <table class = "table table-striped">
-      <thead>
-        <tr>
-            <th>Médico</th>
-            <th>Pacientes Atendidos</th>
-            <th>Pacientes con Signos Vitales Tomados</th>
-            <th>Ingresos Diarios</th>
-        </tr>
-    </thead>
-    <tbody>
-        <tr>
-            <td></td>
-            <td></td>
-            <td></td>
-            <td></td>
-          </tr>
-    </tbody>
-
-    </table>
-
+    <div class="card-header border  border-top-0">
+      <button type="button" id="btn-nuevo-form" class="btn btn-outline-primary" onclick="nuevoForm();">Generar nuevo informe</button>
+    </div>
+    
   </div>
 
 <style>
@@ -85,12 +105,80 @@ h2,h3{
 <script>
     $( "#side_rt01" ).addClass( "active" );
     url="{% url 'vistaRT01' %}";
-
+    
     function mostrarResultado() {
-      document.getElementById('formulario').style.display = 'none';
-      document.getElementById('resultado').style.display = 'block';
+      //Si existe una fecha
+      fecha=$('#fecha').val();
+      if(fecha !== ""){
+        document.getElementById('resultado').style.display = 'block';
+        document.getElementById('formulario').style.display = 'none';
+        let fechaActual = new Date();
+        $('#titulo-fecha').html(`Reporte de todos los medicos generado el: 
+          ${fechaActual.getDate()}/${fechaActual.getMonth()+1}/${fechaActual.getFullYear()}`)
+      }
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/expediente/sgi/consultas',
+        type:"GET",
+        dataType: "json",
+        data: { 
+            'fecha': $('#fecha').val(),
+          },
+          success: function(data){
+            imprimirResultados(data);
+          }
+            
+      });
 
     }
-
+    //Función para consultas los datos del reporte
+    function imprimirResultados(data){
+      //notificación
+      toastr[data.type](data.title);
+      //variables
+      let contador = {};
+      let ingresos = {};
+      let totalPacientes=0;
+      let totalIngresos=0;
+      //Contando los datos
+      data.data.forEach(item=>{
+        let id = item.consulta.doctor;
+        if (contador[id]) {
+          contador[id]++;
+          ingresos[id]=ingresos[id]+parseFloat(item.consumo_medico);
+        } else {
+          contador[id] = 1;
+          ingresos[id]=parseFloat(item.consumo_medico);
+        } 
+      })
+      //Imprimiendo las filas
+      $('#resultados-informe').html("")
+      for (var id in contador) {
+        $('#resultados-informe').append(`
+          <tr>
+            <td>${id}</td>
+            <td>${contador[id]}</td>
+            <td>${contador[id]}</td>
+            <td>$ ${ingresos[id]}</td>
+          </tr>
+        `);
+        totalPacientes=totalPacientes+contador[id];
+        totalIngresos=totalIngresos+ingresos[id];
+      }
+      $('#resultados-informe').append(`
+          <tr>
+            <th>Total</th>
+            <th>${totalPacientes}</th>
+            <th>${totalPacientes}</th>
+            <th>$ ${totalIngresos}</th>
+          </tr>
+        `);
+    }
+    
+    function nuevoForm(){
+      document.getElementById('resultado').style.display = 'none';
+      document.getElementById('formulario').style.display = 'block';
+      $('#fecha').val('');
+    }
+    
   </script>
 {% endblock %}
