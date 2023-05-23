@@ -12,11 +12,17 @@ def estrategico01(request):
 def estrategico02(request):
     return render(request, 'RE02.html')
 
+def bitacoraEstrategicos(request):
+    return render(request, 'BRE.html')
+
 def tactico02(request):
     return render(request, 'RT02.html')
 
 def tactico03(request):
     return render(request, 'RT03.html')
+
+def bitacoraTacticos(request):
+    return render(request, 'BRT.html')
 
 class Tactico01(TemplateView):
     template_name = "RT01.html"

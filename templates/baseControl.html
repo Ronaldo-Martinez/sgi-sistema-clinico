@@ -81,6 +81,16 @@
               </a>
             </li>
             <li>
+              <a href="{% url 'bitacoraRE' %}" class="nav-link text-white" id="side_bre">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">demography</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    Bitacora Reportes Estrátegicos
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
               <a href="{% url 'vistaRT01' %}" class="nav-link text-white" id="side_rt01">
                 <div class="d-flex align-items-start">
                   <span class="material-symbols-outlined">assignment</span>
@@ -110,6 +120,16 @@
                 </div>
               </a>
             </li>
+            <li>
+              <a href="{% url 'bitacoraRT' %}" class="nav-link text-white" id="side_brt">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">demography</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    Bitacora Reportes Tácticos
+                  </div>
+                </div>
+              </a>
+            </li>
             {% endif %}
             {% if request.user.roles.codigo_rol == "ROL_ESTRATEGICO" %}
             <li>
@@ -128,6 +148,16 @@
                   <span class="material-symbols-outlined">assignment</span>
                   <div class="px-2 txt_link" id="txt_link">
                     RE-02
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'bitacoraRE' %}" class="nav-link text-white" id="side_bre">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">demography</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    Bitacora Reportes Estrátegicos
                   </div>
                 </div>
               </a>
@@ -160,6 +190,16 @@
                   <span class="material-symbols-outlined">assignment</span>
                   <div class="px-2 txt_link" id="txt_link">
                     RT-03
+                  </div>
+                </div>
+              </a>
+            </li>
+            <li>
+              <a href="{% url 'bitacoraRT' %}" class="nav-link text-white" id="side_brt">
+                <div class="d-flex align-items-start">
+                  <span class="material-symbols-outlined">demography</span>
+                  <div class="px-2 txt_link" id="txt_link">
+                    Bitacora Reportes Tácticos
                   </div>
                 </div>
               </a>
