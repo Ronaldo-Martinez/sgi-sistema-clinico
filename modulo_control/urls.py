@@ -6,7 +6,8 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
 from modulo_control.views.login import registrar_empleado,editar_empleado,vista_adminitracion_empleados,lista_empleados, get_empleado,menu_estrategico,menu_tactico
 from modulo_control.views.perfil import Perfil
-from modulo_gerencial.views import estrategico01,estrategico02,tactico01,tactico02,tactico03
+from modulo_gerencial.views import estrategico01,estrategico02,tactico02,tactico03, Tactico01
+from django.contrib.auth.decorators import login_required
 
 urlpatterns = [
     path('perfil', Perfil.as_view(), name='perfil'),
@@ -23,7 +24,7 @@ urlpatterns = [
     path('reportes/MenúTáctico', menu_tactico, name= 'menuTactico'),
     path('reportes/RE01/',estrategico01, name= 'vistaRE01'),
     path('reportes/RE02/',estrategico02, name= 'vistaRE02'),
-    path('reportes/RT01/',tactico01, name= 'vistaRT01'),
+    path('reportes/RT01/',login_required(Tactico01.as_view()), name= 'vistaRT01'),
     path('reportes/RT02/',tactico02, name= 'vistaRT02'),
     path('reportes/RT03/',tactico03, name= 'vistaRT03'),
     

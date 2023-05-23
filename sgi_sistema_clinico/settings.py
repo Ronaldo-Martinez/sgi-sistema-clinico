@@ -110,6 +110,7 @@ AUTH_PASSWORD_VALIDATORS = [
 
 #Custom User model
 AUTH_USER_MODEL = 'modulo_control.Empleado'
+LOGIN_URL="/login/"
 
 # Internationalization
 # https://docs.djangoproject.com/en/4.2/topics/i18n/
