@@ -46,8 +46,8 @@
     <!--Resultados del reporte-->
     <div class="card-body" id="resultado" style="display: none;">
       <div>
-        <h3 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Reporte de todos los médicos desde fecha1 hasta fecha2</h2>
-        <h3 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario 1 el fecha a las 19:30 </h3>
+        <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Reporte de todos los médicos desde fecha1 hasta fecha2</h2>
+        <h5 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario 1 el fecha a las 19:30 </h3>
         <br>
         <table class = "table table-striped text-center border" >
           <thead>
@@ -79,6 +79,7 @@
         </table>
       </div>
       <div >
+        <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
         <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
       </div>
     </div>
@@ -90,7 +91,7 @@
 
 <style>
 
-h2,h3{
+h2,h3,h5{
 color: #000034;
 }
 .imagen{
