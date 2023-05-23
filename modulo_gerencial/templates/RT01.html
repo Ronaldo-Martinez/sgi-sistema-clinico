@@ -25,6 +25,7 @@
       </div>
       <!--Formulario del reporte-->
       <div class="card-body" id="formulario">
+        <!--Formulario-->
         <div class="card col-md-12 ">
           <div class="card-body" >
             <form>
@@ -45,6 +46,8 @@
             </form>
           </div>
         </div>
+        <!--Lista de los ultimos reportes realizados-->
+
       </div>
       <!--Resultados del reporte-->
       <div class="card-body" id="resultado" style="display: none;">
@@ -72,7 +75,7 @@
           </table>
         </div>
         <div >
-          <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
+          <button type="button" id="btn-guardar" class="btn btn-success" onclick="almacenarDatosReporte();">Guadar Parametros Reporte</button>
           <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
         </div>
       </div>
@@ -106,7 +109,7 @@ h2,h3,h5{
 {% block js %}
 <script>
     $( "#side_rt01" ).addClass( "active" );
-    url="{% url 'vistaRT01' %}";
+    const url="{% url 'vistaRT01' %}";
 
     async function mostrarResultado() {
       //Si existe una fecha
@@ -207,6 +210,25 @@ h2,h3,h5{
           console.error(error);
         });
       return data;
+    }
+
+    function almacenarDatosReporte(){
+      $.ajax({
+        url: "{% url 'vistaRT01' %}",
+        type:"POST",
+        dataType: "json",
+        headers: {
+                "X-CSRFToken": '{{ csrf_token }}',
+            },
+        data: { 
+            'fecha_inicio': $('#fecha').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            
+          }      
+      });
     }
   
   </script>
