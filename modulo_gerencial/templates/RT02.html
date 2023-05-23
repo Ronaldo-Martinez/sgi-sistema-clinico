@@ -39,17 +39,20 @@
             </div>
             <br>
             <div class="form-group">
-              <label>Tipo de Examen</label>
-              <select class="form-select" id="idExamen" name="idExamen">
-                <option value="">--Seleccione una categoria--</option>
-                <option>1</option>
-                <option>1</option>
-                <option>1</option>
-  
+              <label>Categoría de Exámen</label>
+              <select class="form-select" id="idcategoria" name="idExamen" onchange="actualizarSelect();">
+                <option value="0">--Seleccione una categoria--</option>
               </select>
             </div>
             <br>
-            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
+            <div class="form-group">
+              <label>Tipo de Examen</label>
+              <select class="form-select" id="idExamen" name="idExamen">
+                <option value="">--Seleccione una categoria--</option>
+              </select>
+            </div>
+            <br>
+            <button class="btn btn-dark" type="button" onclick="consultarExamenes()">Consultar</button>
             
           </form>
         </div>
@@ -64,19 +67,15 @@
         <table class = "table table-striped text-center border" >
           <thead>
               <tr>
+                  <th>Exámen</th>
                   <th>Fecha</th>
                   <th>Exámenes Realizados</th>
                   <th>Resultados Entregados</th>
                   <th>Ingresos Diarios</th>
               </tr>
           </thead>
-          <tbody>
-              <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
+          <tbody id="resultados-informe">
+
           </tbody>
         </table>
       </div>
@@ -116,6 +115,9 @@ color: #000034;
 <script>
     $( "#side_rt02" ).addClass( "active" );
     url="{% url 'vistaRT02' %}";
+    consultarCategorias();
+    consultarExamenesSelect();
+
     function mostrarResultado() {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
@@ -127,6 +129,112 @@ color: #000034;
       $('#fechaInico').val('');
       $('#fechaFin').val('');
       $('#idExamen').val('');
+    }
+    function consultarExamenes(){
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-reporte/',
+        type:"GET",
+        dataType: "json",
+        data: { 
+            'fechaInicio': $('#fechaInicio').val(),
+            'fechaFin': $('#fechaFin').val(),
+          },
+          success: async function(data){
+            mostrarResultado();
+            imprimirResultados(data);
+          }      
+      });
+    }
+    //Función para consultas los datos del reporte
+    function imprimirResultados(data){
+      //notificación
+      toastr[data.type](data.title);
+      //variables
+      let contador = {};
+      let ingresos = {};
+      let nombresExamen = {};
+      let totalExamen=0;
+      let totalResultado=0;
+      let totalIngresos=0;
+      //Contando los datos
+      data.data.forEach(item=>{
+        let id = item.examen_laboratorio.id_examen_laboratorio;
+        if (contador[id]) {
+          contador[id]++;
+          ingresos[id]=ingresos[id]+parseFloat(item.examen_laboratorio.precio_examen);
+        } else {
+          nombresExamen[id]=item.examen_laboratorio.nombre_examen
+          contador[id] = 1;
+          ingresos[id]=parseFloat(item.examen_laboratorio.precio_examen);
+        } 
+      })
+      //Imprimiendo las filas
+      $('#resultados-informe').html("")
+      for (var id in contador) {
+
+        $('#resultados-informe').append(`
+          <tr>
+            <td>${nombresExamen[id]}</td>
+            <td></td>
+            <td>${contador[id]}</td>
+            <td>${contador[id]}</td>
+            <td>$ ${ingresos[id]}</td>
+          </tr>
+        `);
+        totalResultado=totalResultado+contador[id];
+        totalIngresos=totalIngresos+ingresos[id];
+      }
+      $('#resultados-informe').append(`
+          <tr>
+            <th>Total</th>
+            <th></th>
+            <th>${totalResultado}</th>
+            <th>${totalResultado}</th>
+            <th>$ ${totalIngresos}</th>
+          </tr>
+        `);
+    }
+    
+    async function consultarCategorias(){
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-categorias/',
+        type:"GET",
+        dataType: "json",
+          success: async function(data){
+            data.data.forEach(item=>{
+              $('#idcategoria').append(`
+                <option value="${item.id_categoria}">${item.descripcion_categoria}</option>
+              `)
+            })
+            console.log(data)
+          }      
+      });
+    }
+
+    async function consultarExamenesSelect(){
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-examenes/',
+        type:"GET",
+        dataType: "json",
+          success: async function(data){
+            localStorage.setItem('categoriaExamen', JSON.stringify(data.data));    
+          }      
+      });
+    }
+
+    function actualizarSelect(){
+      let categoriaExamen = localStorage.getItem('categoriaExamen');
+      let id_categoria = parseInt($('#idcategoria').val());
+      categoriaExamen= JSON.parse(categoriaExamen);
+      categoriaExamen=categoriaExamen.filter(function(item) {
+        return item.categoria.id_categoria === id_categoria;
+      });
+      $('#idExamen').html('');
+      categoriaExamen.forEach(item=>{
+        $('#idExamen').append(`
+          <option value="${item.examen_laboratorio.id_examen_laboratorio}">${item.examen_laboratorio.nombre_examen}</option>
+        `);
+      })
     }
   </script>
 {% endblock %}
