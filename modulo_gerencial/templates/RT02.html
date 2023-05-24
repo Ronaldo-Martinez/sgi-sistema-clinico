@@ -61,13 +61,12 @@
     <!--Resultados del reporte-->
     <div class="card-body" id="resultado" style="display: none;">
       <div>
-        <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Exámenes de categoria realizados desde el fecha1 hasta fecha2</h2>
-        <h5 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las hora 19:30 </h3>
+        <h5 class="text-primary-dark text-center" id="titulo-fecha"></h2>
+        <h5 class="text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} a las  {% now "H:i" %}. </h3>
         <br>
         <table class = "table table-striped text-center border" >
           <thead>
               <tr>
-                  <th>Exámen</th>
                   <th>Fecha</th>
                   <th>Exámenes Realizados</th>
                   <th>Resultados Entregados</th>
@@ -80,7 +79,7 @@
         </table>
       </div>
       <div >
-        <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
+        <button type="button" id="btn-guardar" class="btn btn-success" onclick="almacenarDatosReporte();">Guadar Parametros Reporte</button>
         <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
       </div>
     </div>
@@ -121,7 +120,12 @@ color: #000034;
     function mostrarResultado() {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
-
+      let id_examen=$('#idExamen').val();
+      let examen=$('#idExamen').find(`option[value='${id_examen}']`).text();
+      let fechaInicio=$('#fechaInicio').val()
+      let fechaFin=$('#fechaFin').val()
+      $('#titulo-fecha').html("");
+      $('#titulo-fecha').append(`Exámenes de ${examen} realizados desde el ${fechaInicio} hasta ${fechaFin}`)
     }
     function nuevoForm(){
       document.getElementById('resultado').style.display = 'none';
@@ -138,32 +142,36 @@ color: #000034;
         data: { 
             'fechaInicio': $('#fechaInicio').val(),
             'fechaFin': $('#fechaFin').val(),
+            'idExamen': $('#idExamen').val(),
           },
           success: async function(data){
-            mostrarResultado();
-            imprimirResultados(data);
+            toastr[data.type](data.title);
+            if(data.type==='success'){
+              mostrarResultado();
+              imprimirResultados(data);
+            }
+  
           }      
       });
     }
     //Función para consultas los datos del reporte
     function imprimirResultados(data){
-      //notificación
-      toastr[data.type](data.title);
       //variables
       let contador = {};
       let ingresos = {};
-      let nombresExamen = {};
+      let fecha = {};
       let totalExamen=0;
       let totalResultado=0;
       let totalIngresos=0;
       //Contando los datos
       data.data.forEach(item=>{
-        let id = item.examen_laboratorio.id_examen_laboratorio;
+        let id = item.fecha_creacion;
+        id= id.substring(0, 10);
         if (contador[id]) {
           contador[id]++;
           ingresos[id]=ingresos[id]+parseFloat(item.examen_laboratorio.precio_examen);
         } else {
-          nombresExamen[id]=item.examen_laboratorio.nombre_examen
+          fecha[id]=item.fecha_creacion.substring(0, 10);
           contador[id] = 1;
           ingresos[id]=parseFloat(item.examen_laboratorio.precio_examen);
         } 
@@ -174,8 +182,7 @@ color: #000034;
 
         $('#resultados-informe').append(`
           <tr>
-            <td>${nombresExamen[id]}</td>
-            <td></td>
+            <td>${fecha[id]}</td>
             <td>${contador[id]}</td>
             <td>${contador[id]}</td>
             <td>$ ${ingresos[id]}</td>
@@ -187,7 +194,6 @@ color: #000034;
       $('#resultados-informe').append(`
           <tr>
             <th>Total</th>
-            <th></th>
             <th>${totalResultado}</th>
             <th>${totalResultado}</th>
             <th>$ ${totalIngresos}</th>
@@ -236,5 +242,27 @@ color: #000034;
         `);
       })
     }
+
+    function almacenarDatosReporte(){
+      $.ajax({
+        url: "{% url 'vistaRT02' %}",
+        type:"POST",
+        dataType: "json",
+        headers: {
+                "X-CSRFToken": '{{ csrf_token }}',
+            },
+        data: { 
+            'fecha_inicio': $('#fechaInicio').val(),
+            'fecha_fin':$('#fechaFin').val(),
+            'id_examen':$('#idExamen').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            
+          }      
+      });
+    }
+  
   </script>
 {% endblock %}

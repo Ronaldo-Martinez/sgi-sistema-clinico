@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from django.views.generic import TemplateView
 from django.http import JsonResponse
-from .models import Reporte
+from .models import Reporte, FiltroReporte
 from datetime import datetime
 
 # Create your views here.
@@ -39,3 +39,25 @@ class Tactico01(TemplateView):
         print(fecha_str)
         return JsonResponse(self.response)
 
+class Tactico02(TemplateView):
+    template_name = "RT02.html"
+    login_url='/login/'  
+    response={'type':'','title':'', 'info':''}
+
+    def post(self, request, *args, **kwargs):
+        fecha_inicio = datetime.strptime(request.POST.get('fecha_inicio'), "%Y-%m-%d").date()
+        fecha_fin=datetime.strptime(request.POST.get('fecha_fin'), "%Y-%m-%d").date()
+        idExamen=request.POST.get('id_examen')
+        reporte=Reporte.objects.create(
+            empleado=request.user,
+            tipo_reporte=3,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin
+        )
+        FiltroReporte.objects.create(
+            reporte=reporte,
+            valor=idExamen
+        )
+        self.response['type']='success'
+        self.response['title']='Se han almacenado los parametros del reporte.'
+        return JsonResponse(self.response)
