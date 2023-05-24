@@ -6,7 +6,7 @@ from django.contrib.staticfiles.urls import staticfiles_urlpatterns
 from django.views.generic import RedirectView
 from modulo_control.views.login import registrar_empleado,editar_empleado,vista_adminitracion_empleados,lista_empleados, get_empleado,menu_estrategico,menu_tactico
 from modulo_control.views.perfil import Perfil
-from modulo_gerencial.views import estrategico01,estrategico02,tactico03, Tactico01, Tactico02
+from modulo_gerencial.views import estrategico01,estrategico02,tactico03, Tactico01, Tactico02, bitacoraTacticos, bitacoraEstrategicos
 
 from django.contrib.auth.decorators import login_required
 
