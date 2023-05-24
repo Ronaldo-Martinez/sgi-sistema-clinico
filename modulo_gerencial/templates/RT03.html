@@ -47,7 +47,7 @@
     <div class="card-body" id="resultado" style="display: none;">
       <div>
         <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Reporte de todos los médicos desde fecha1 hasta fecha2</h2>
-        <h5 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario 1 el fecha a las 19:30 </h3>
+          <h5 class="fw-bold text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} a las  {% now "H:i" %}. </h3>
         <br>
         <table class = "table table-striped text-center border" >
           <thead>
@@ -70,7 +70,7 @@
         </div>
       </div>
       <div >
-        <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
+        <button type="button" id="btn-guardar" class="btn btn-success" onclick="almacenarDatosReporte();">Guadar Parametros Reporte</button>
         <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
       </div>
     </div>
@@ -108,7 +108,10 @@ color: #000034;
     function mostrarResultado() {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
-
+      let fechaInicio=$('#fechaInicio').val()
+      let fechaFin=$('#fechaFin').val()
+      $('#titulo-fecha').html("");
+      $('#titulo-fecha').append(`Reporte de todos los medicos, realizado desde el ${fechaInicio} hasta ${fechaFin}`)
     }
     function nuevoForm(){
       document.getElementById('resultado').style.display = 'none';
@@ -234,6 +237,26 @@ color: #000034;
           </tr>
           `);
       $('#spinner').hide();
+    }
+
+    function almacenarDatosReporte(){
+      $.ajax({
+        url: "{% url 'vistaRT03' %}",
+        type:"POST",
+        dataType: "json",
+        headers: {
+                "X-CSRFToken": '{{ csrf_token }}',
+            },
+        data: { 
+            'fecha_inicio': $('#fechaInicio').val(),
+            'fecha_fin':$('#fechaFin').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            
+          }      
+      });
     }
   </script>
 {% endblock %}

@@ -18,7 +18,7 @@ class Reporte(models.Model):
     fecha_inicio=models.DateField(default=now, blank=True)
     fecha_fin=models.DateField(default=now, blank=True)
     def __str__(self):
-        return self.empleado.nombres
+        return f'{self.empleado.nombres} - {self.get_tipo_reporte_display()}'
 
 class FiltroReporte(models.Model):
     id_filtro_reporte=models.AutoField(primary_key=True)
