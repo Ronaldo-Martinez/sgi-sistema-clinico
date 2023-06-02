@@ -9,17 +9,35 @@ from datetime import datetime
 def estrategico01(request):
     return render(request, 'RE01.html')
 
+class Estrategico01(TemplateView):
+    template_name = "RE01.html"
+    login_url='/login/'  
+    response={'type':'','title':'', 'info':''}
+    def get(self, request, *args, **kwargs):
+        return render(request,self.template_name)
+    def post(self, request, *args, **kwargs):
+        fecha_inicio = datetime.strptime(request.POST.get('fecha_inicio'), "%Y-%m-%d").date()
+        fecha_fin=datetime.strptime(request.POST.get('fecha_fin'), "%Y-%m-%d").date()
+        idCategoria=request.POST.get('idCategoria')
+        reporte=Reporte.objects.create(
+            empleado=request.user,
+            tipo_reporte=1,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin
+        )
+        FiltroReporte.objects.create(
+            reporte=reporte,
+            valor=idCategoria
+        )
+        self.response['type']='success'
+        self.response['title']='Se han almacenado los parametros del reporte.'
+        return JsonResponse(self.response)
+
 def estrategico02(request):
     return render(request, 'RE02.html')
 
 def bitacoraEstrategicos(request):
     return render(request, 'BRE.html')
-
-def tactico02(request):
-    return render(request, 'RT02.html')
-
-def tactico03(request):
-    return render(request, 'RT03.html')
 
 def bitacoraTacticos(request):
     return render(request, 'BRT.html')

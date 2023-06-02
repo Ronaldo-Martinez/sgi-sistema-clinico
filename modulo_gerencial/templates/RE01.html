@@ -38,18 +38,18 @@
             </div>
             <br>
             <div class="form-group">
-              <label>Tipo de Examen</label>
-              <select class="form-select" id="idExamen" name="idExamen">
-                <option value="">--Seleccione una categoria--</option>
-                <option>1</option>
-                <option>1</option>
-                <option>1</option>
-  
+              <label>Categoría de Examen</label>
+              <select class="form-select" id="idcategoria" name="idcategoria">
+                <option value="0">--Seleccione una categoria--</option>
               </select>
             </div>
             <br>
-            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
-            
+            <button class="btn btn-dark" type="button" onclick="consultarExamenes()">Consultar</button>
+            <div class=" text-center pb-2">
+              <div class="spinner-border text-primary" role="status" id="spinner">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -57,8 +57,8 @@
     <!--Resultados del reporte-->
     <div class="card-body" id="resultado" style="display: none;">
       <div>
-        <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Categoria de Exámen: categoria desde fechaInicio hasta fechaFin </h2>
-        <h5 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las hora 19:30 </h3>
+        <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha"></h2>
+        <h5 class="text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} a las  {% now "H:i" %}. </h3>
         <br>
         <h5 class="fw-bold text-primary-dark text-center">Exámenes más frecuentes</h4>
         <table class = "table table-striped text-center border" >
@@ -68,7 +68,7 @@
                   <th>Frecuencia</th>
               </tr>
           </thead>
-          <tbody>
+          <tbody id="tabla-mas-frecuentes">
               <tr>
                   <td></td>
                   <td></td>
@@ -84,7 +84,7 @@
                   <th>Frecuencia</th>
               </tr>
           </thead>
-          <tbody>
+          <tbody id="tabla-menos-frecuentes">
               <tr>
                   <td></td>
                   <td></td>
@@ -93,7 +93,7 @@
         </table>
       </div>
       <div >
-        <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
+        <button type="button" id="btn-guardar" class="btn btn-success" onclick="almacenarDatosReporte();">Guadar Parametros Reporte</button>
       
         <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
       </div>
@@ -127,18 +127,145 @@
 {% block js %}
 <script>
     $( "#side_re01" ).addClass( "active" );
+    $('#spinner').hide();
     url="{% url 'vistaRE01' %}";
+    consultarCategorias();
+    
     function mostrarResultado() {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
-
+      let id_examen=$('#idcategoria').val();
+      let categoria=$('#idcategoria').find(`option[value='${idcategoria}']`).text();
+      let fechaInicio=$('#fechaInicio').val()
+      let fechaFin=$('#fechaFin').val()
+      $('#titulo-fecha').html("");
+      $('#titulo-fecha').append(`Exámenes de ${categoria} realizados desde el ${fechaInicio} hasta ${fechaFin}`)
     }
     function nuevoForm(){
       document.getElementById('resultado').style.display = 'none';
       document.getElementById('formulario').style.display = 'block';
       $('#fechaInico').val('');
       $('#fechaFin').val('');
-      $('#idExamen').val('');
+      $('#idcategoria').val('');
     }
+
+    async function consultarCategorias(){
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-categorias/',
+        type:"GET",
+        dataType: "json",
+          success: async function(data){
+            data.data.forEach(item=>{
+              $('#idcategoria').append(`
+                <option value="${item.id_categoria}">${item.descripcion_categoria}</option>
+              `)
+            })
+          }      
+      });
+    }
+    
+    function consultarExamenes(){
+      $('#spinner').show();
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-reporte/',
+        type:"GET",
+        dataType: "json",
+        data: { 
+            'fechaInicio': $('#fechaInicio').val(),
+            'fechaFin': $('#fechaFin').val(),
+            'idCategoria': $('#idcategoria').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            if(data.type==='success'){
+              mostrarResultado();
+              imprimirResultados(data);
+            }
+  
+          }      
+      });
+    }
+    //Función para consultas los datos del reporte
+    function imprimirResultados(data){
+      //variables
+      $('#tabla-mas-frecuentes').html("");
+      $('#tabla-menos-frecuentes').html("");
+      let examenesFrecuentes = contarExamenesFrecuentes(data.data);
+      let masAlto=0;
+      //Contando los datos
+      masAlto=masFrecuente(examenesFrecuentes);
+      for(let examen in examenesFrecuentes){
+        let valor = examenesFrecuentes[examen];
+        //La mitad más alta
+        if(valor > (masAlto/2)){
+          $('#tabla-mas-frecuentes').append(`
+          <tr>
+            <td>${examen}</td>
+            <td>${valor}</td>
+          </tr>
+         `);
+        }
+        //mitad menos alta
+        else{
+          $('#tabla-menos-frecuentes').append(`
+          <tr>
+            <td>${examen}</td>
+            <td>${valor}</td>
+          </tr>
+         `);
+        }
+      }
+      $('#spinner').hide();
+    }
+
+    function contarExamenesFrecuentes(resultados) {
+      let examenesFrecuentes = {};
+      
+      // Contar la frecuencia de cada examen
+      resultados.forEach(function(resultado) {
+        var examen = resultado.examen_laboratorio.nombre_examen;
+        
+        if (examen in examenesFrecuentes) {
+          examenesFrecuentes[examen]++;
+        } else {
+          examenesFrecuentes[examen] = 1;
+        }
+      });
+      
+      return examenesFrecuentes;
+    }
+    function masFrecuente(frecuencias){
+      let masAlto=0;
+      for(let frecuencia in frecuencias){
+        let valor = frecuencias[frecuencia];
+        console.log(valor)
+        if(valor> masAlto){
+          masAlto=valor;
+        }
+      }
+      return masAlto;
+    }
+
+    function almacenarDatosReporte(){
+      $.ajax({
+        url: "{% url 'vistaRE01' %}",
+        type:"POST",
+        dataType: "json",
+        headers: {
+                "X-CSRFToken": '{{ csrf_token }}',
+            },
+        data: { 
+            'fecha_inicio': $('#fechaInicio').val(),
+            'fecha_fin':$('#fechaFin').val(),
+            'idCategoria': $('#idcategoria').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            
+          }      
+      });
+    }
+
   </script>
 {% endblock %}
