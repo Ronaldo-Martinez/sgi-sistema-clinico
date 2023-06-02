@@ -62,7 +62,7 @@
     <div class="card-body" id="resultado" style="display: none;">
       <div>
         <h5 class="text-primary-dark text-center" id="titulo-fecha"></h2>
-        <h5 class="text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} a las  {% now "H:i" %}. </h3>
+        <h5 class="text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} el {%now "d-m-Y" %} a las  {% now "H:i" %}. </h3>
         <br>
         <table class = "table table-striped text-center border" >
           <thead>
