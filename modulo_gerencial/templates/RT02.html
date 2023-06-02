@@ -39,17 +39,20 @@
             </div>
             <br>
             <div class="form-group">
-              <label>Tipo de Examen</label>
-              <select class="form-select" id="idExamen" name="idExamen">
-                <option value="">--Seleccione una categoria--</option>
-                <option>1</option>
-                <option>1</option>
-                <option>1</option>
-  
+              <label>Categoría de Exámen</label>
+              <select class="form-select" id="idcategoria" name="idExamen" onchange="actualizarSelect();">
+                <option value="0">--Seleccione una categoria--</option>
               </select>
             </div>
             <br>
-            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
+            <div class="form-group">
+              <label>Tipo de Examen</label>
+              <select class="form-select" id="idExamen" name="idExamen">
+                <option value="">--Seleccione una categoria--</option>
+              </select>
+            </div>
+            <br>
+            <button class="btn btn-dark" type="button" onclick="consultarExamenes()">Consultar</button>
             
           </form>
         </div>
@@ -58,8 +61,8 @@
     <!--Resultados del reporte-->
     <div class="card-body" id="resultado" style="display: none;">
       <div>
-        <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Exámenes de categoria realizados desde el fecha1 hasta fecha2</h2>
-        <h5 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las hora 19:30 </h3>
+        <h5 class="text-primary-dark text-center" id="titulo-fecha"></h2>
+        <h5 class="text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} a las  {% now "H:i" %}. </h3>
         <br>
         <table class = "table table-striped text-center border" >
           <thead>
@@ -70,18 +73,13 @@
                   <th>Ingresos Diarios</th>
               </tr>
           </thead>
-          <tbody>
-              <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
+          <tbody id="resultados-informe">
+
           </tbody>
         </table>
       </div>
       <div >
-        <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
+        <button type="button" id="btn-guardar" class="btn btn-success" onclick="almacenarDatosReporte();">Guadar Parametros Reporte</button>
         <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
       </div>
     </div>
@@ -116,10 +114,18 @@ color: #000034;
 <script>
     $( "#side_rt02" ).addClass( "active" );
     url="{% url 'vistaRT02' %}";
+    consultarCategorias();
+    consultarExamenesSelect();
+
     function mostrarResultado() {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
-
+      let id_examen=$('#idExamen').val();
+      let examen=$('#idExamen').find(`option[value='${id_examen}']`).text();
+      let fechaInicio=$('#fechaInicio').val()
+      let fechaFin=$('#fechaFin').val()
+      $('#titulo-fecha').html("");
+      $('#titulo-fecha').append(`Exámenes de ${examen} realizados desde el ${fechaInicio} hasta ${fechaFin}`)
     }
     function nuevoForm(){
       document.getElementById('resultado').style.display = 'none';
@@ -128,5 +134,135 @@ color: #000034;
       $('#fechaFin').val('');
       $('#idExamen').val('');
     }
+    function consultarExamenes(){
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-reporte/',
+        type:"GET",
+        dataType: "json",
+        data: { 
+            'fechaInicio': $('#fechaInicio').val(),
+            'fechaFin': $('#fechaFin').val(),
+            'idExamen': $('#idExamen').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            if(data.type==='success'){
+              mostrarResultado();
+              imprimirResultados(data);
+            }
+  
+          }      
+      });
+    }
+    //Función para consultas los datos del reporte
+    function imprimirResultados(data){
+      //variables
+      let contador = {};
+      let ingresos = {};
+      let fecha = {};
+      let totalExamen=0;
+      let totalResultado=0;
+      let totalIngresos=0;
+      //Contando los datos
+      data.data.forEach(item=>{
+        let id = item.fecha_creacion;
+        id= id.substring(0, 10);
+        if (contador[id]) {
+          contador[id]++;
+          ingresos[id]=ingresos[id]+parseFloat(item.examen_laboratorio.precio_examen);
+        } else {
+          fecha[id]=item.fecha_creacion.substring(0, 10);
+          contador[id] = 1;
+          ingresos[id]=parseFloat(item.examen_laboratorio.precio_examen);
+        } 
+      })
+      //Imprimiendo las filas
+      $('#resultados-informe').html("")
+      for (var id in contador) {
+
+        $('#resultados-informe').append(`
+          <tr>
+            <td>${fecha[id]}</td>
+            <td>${contador[id]}</td>
+            <td>${contador[id]}</td>
+            <td>$ ${ingresos[id]}</td>
+          </tr>
+        `);
+        totalResultado=totalResultado+contador[id];
+        totalIngresos=totalIngresos+ingresos[id];
+      }
+      $('#resultados-informe').append(`
+          <tr>
+            <th>Total</th>
+            <th>${totalResultado}</th>
+            <th>${totalResultado}</th>
+            <th>$ ${totalIngresos}</th>
+          </tr>
+        `);
+    }
+    
+    async function consultarCategorias(){
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-categorias/',
+        type:"GET",
+        dataType: "json",
+          success: async function(data){
+            data.data.forEach(item=>{
+              $('#idcategoria').append(`
+                <option value="${item.id_categoria}">${item.descripcion_categoria}</option>
+              `)
+            })
+            console.log(data)
+          }      
+      });
+    }
+
+    async function consultarExamenesSelect(){
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/laboratorio/sgi-examenes/',
+        type:"GET",
+        dataType: "json",
+          success: async function(data){
+            localStorage.setItem('categoriaExamen', JSON.stringify(data.data));    
+          }      
+      });
+    }
+
+    function actualizarSelect(){
+      let categoriaExamen = localStorage.getItem('categoriaExamen');
+      let id_categoria = parseInt($('#idcategoria').val());
+      categoriaExamen= JSON.parse(categoriaExamen);
+      categoriaExamen=categoriaExamen.filter(function(item) {
+        return item.categoria.id_categoria === id_categoria;
+      });
+      $('#idExamen').html('');
+      categoriaExamen.forEach(item=>{
+        $('#idExamen').append(`
+          <option value="${item.examen_laboratorio.id_examen_laboratorio}">${item.examen_laboratorio.nombre_examen}</option>
+        `);
+      })
+    }
+
+    function almacenarDatosReporte(){
+      $.ajax({
+        url: "{% url 'vistaRT02' %}",
+        type:"POST",
+        dataType: "json",
+        headers: {
+                "X-CSRFToken": '{{ csrf_token }}',
+            },
+        data: { 
+            'fecha_inicio': $('#fechaInicio').val(),
+            'fecha_fin':$('#fechaFin').val(),
+            'id_examen':$('#idExamen').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            
+          }      
+      });
+    }
+  
   </script>
 {% endblock %}

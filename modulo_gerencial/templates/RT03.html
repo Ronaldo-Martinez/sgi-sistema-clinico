@@ -37,7 +37,7 @@
               <input type="date" class="form-control" id="fechaFin" name="fechaFin">
             </div>
             <br>
-            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
+            <button class="btn btn-dark" type="button" onclick="consultarDatosDeConsultas()">Consultar</button>
             
           </form>
         </div>
@@ -47,7 +47,7 @@
     <div class="card-body" id="resultado" style="display: none;">
       <div>
         <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Reporte de todos los médicos desde fecha1 hasta fecha2</h2>
-        <h5 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario 1 el fecha a las 19:30 </h3>
+          <h5 class="fw-bold text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} a las  {% now "H:i" %}. </h3>
         <br>
         <table class = "table table-striped text-center border" >
           <thead>
@@ -59,27 +59,18 @@
               <th>Tiempo promedio total(min)</th>
             </tr>
           </thead>
-          <tbody>
-              <tr>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                  <td></td>
-                </tr>
-                <tr>
-                  <th>Promedio</th>
-                  <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    
-                </tr>
+          <tbody id="resultados-informe">
+
           </tbody>
         </table>
+        <div class=" text-center pb-2">
+          <div class="spinner-border text-primary" role="status" id="spinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
       </div>
       <div >
-        <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
+        <button type="button" id="btn-guardar" class="btn btn-success" onclick="almacenarDatosReporte();">Guadar Parametros Reporte</button>
         <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
       </div>
     </div>
@@ -117,13 +108,155 @@ color: #000034;
     function mostrarResultado() {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
-
+      let fechaInicio=$('#fechaInicio').val()
+      let fechaFin=$('#fechaFin').val()
+      $('#titulo-fecha').html("");
+      $('#titulo-fecha').append(`Reporte de todos los medicos, realizado desde el ${fechaInicio} hasta ${fechaFin}`)
     }
     function nuevoForm(){
       document.getElementById('resultado').style.display = 'none';
       document.getElementById('formulario').style.display = 'block';
       $('#fechaInico').val('');
       $('#fechaFin').val('');
+    }
+    function consultarDatosDeConsultas(){
+      mostrarResultado();
+      $.ajax({
+        url: 'http://clinica.code-rm.tk/expediente/sgi/consultas',
+        type:"GET",
+        dataType: "json",
+        data: { 
+            'fecha': $('#fechaInicio').val(),
+            'fechaFin':$('#fechaFin').val()
+          },
+          success: async function(data){
+            $('#resultados-informe').html("");
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            let empleados = await jsonEmpleados();
+            $('#spinner').show();
+            imprimirResultados(data, empleados);
+          }      
+      });
+    }
+    async function jsonEmpleados(){
+      let data = await fetch('http://clinica.code-rm.tk/control/empleados/lista/')
+        .then(function(response) {
+          if (response.ok) {
+            return response.json();
+          }
+          throw new Error('Error en la solicitud HTTP');
+        })
+        .catch(function(error) {
+          // Manejar el error de la solicitud
+          console.error(error);
+        });
+        data= data.filter(function(empleado) {
+              return empleado.nombre_rol === 'Doctor';
+            });
+      return data;
+    }
+    
+    function imprimirResultados(data, empleados){
+      toastr[data.type](data.title);
+      //limpiando tabla
+      let datosFiltrados=[];
+      let nombres=[];
+      let totalMinutosEspera=0;
+      let totalMinutosConsulta=0;
+      let totalMinutos=0;
+      let contador=0;
+      //Filtrando datos por medico
+      empleados.forEach(medico=>{
+        id=medico.codigo_empleado
+        datosFiltrados[id]=data.data.filter((item)=>{
+          return item.consulta.doctor===id;
+        })
+        nombres[id]=`${medico.nombres} ${medico.apellidos}`
+      });
+      //Recorriendo datos filtrados
+      for(const id in datosFiltrados){
+        let fechas={}
+        let sumatoriasEspera=[]
+        let sumatoriasConsulta=[]
+        let contadores={}
+        let nombreDoctores={}
+        //Recorriendo array filtrado para cada doctor
+        datosFiltrados[id].forEach(item=>{
+          let id=item.fecha_de_cola;
+          let horaIngreso = new Date(`1970-01-01T${item.hora_de_ingreso}Z`);
+          let horaInicioConsulta = new Date(`1970-01-01T${item.consulta.hora_inicio}Z`);
+          let horaFinConsulta = new Date(`1970-01-01T${item.consulta.hora_fin}Z`);
+          if(fechas[id]){
+            //Si se suma un nuevo elmento
+            sumatoriasEspera[id]=sumatoriasEspera[id]+(horaInicioConsulta-horaIngreso);
+            sumatoriasConsulta[id]=sumatoriasConsulta[id]+(horaFinConsulta-horaInicioConsulta);
+            contadores[id]++;
+          }
+          else{
+            //Si se inicia el conteo
+            sumatoriasEspera[id]=horaInicioConsulta-horaIngreso; //tiempo de espera en milisegundos
+            sumatoriasConsulta[id]=horaFinConsulta-horaInicioConsulta;
+            contadores[id]=1;
+            fechas[id]=id
+          }
+        })
+        
+        for(const fecha in fechas){
+          let minutos=(sumatoriasEspera[fecha]/contadores[fecha])/60000;
+          let minutosconsulta=(sumatoriasConsulta[fecha]/contadores[fecha])/60000;
+          let minutosTotal=minutos+minutosconsulta;
+          //totales
+          totalMinutosEspera=totalMinutosEspera+minutos;
+          totalMinutosConsulta=totalMinutosConsulta+minutosconsulta;
+          totalMinutos=totalMinutos+minutosTotal;
+          contador++;
+          //datos para imprimir
+          minutosEspera= minutos.toFixed(2);
+          minutosconsulta=minutosconsulta.toFixed(2);
+          minutosTotal=minutosTotal.toFixed(2);
+          $('#resultados-informe').append(`
+          <tr>
+            <td>${fecha}</td>
+            <td>${nombres[id]}</td>
+            <td>${minutosEspera}</td>
+            <td>${minutosconsulta}</td>
+            <td>${minutosTotal}</td>
+          </tr>
+          `);
+          
+        }
+      }
+      
+      $('#resultados-informe').append(`
+          <tr>
+            <th>Promedio</th>
+            <th></th>
+            <th>${(totalMinutosEspera/contador).toFixed(2)}</th>
+            <th>${(totalMinutosConsulta/contador).toFixed(2)}</th>
+            <th>${(totalMinutos/contador).toFixed(2)}</th>
+          </tr>
+          `);
+      $('#spinner').hide();
+    }
+
+    function almacenarDatosReporte(){
+      $.ajax({
+        url: "{% url 'vistaRT03' %}",
+        type:"POST",
+        dataType: "json",
+        headers: {
+                "X-CSRFToken": '{{ csrf_token }}',
+            },
+        data: { 
+            'fecha_inicio': $('#fechaInicio').val(),
+            'fecha_fin':$('#fechaFin').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            
+          }      
+      });
     }
   </script>
 {% endblock %}
