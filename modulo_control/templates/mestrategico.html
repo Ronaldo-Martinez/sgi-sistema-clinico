@@ -1,10 +1,85 @@
 {% extends "baseControl.html" %}
 {% load static %}
-{% block titulo %} Reportes Estrategicos {% endblock %}
+{% block titulo %} Bitácora Reportes Estratégicos {% endblock %}
 {% block content %}
 <div class="container pt-1">
-    <h2 class="fw-bold text-secondary">Reportes Estrategicos</h2>    
-</div>
+    <!--Encabezado-->
+    <div class="card border border-bottom-0">
+      <div class="card-header">
+        <div class="row">
+          <div class="col-2 d-flex align-items-center justify-content-center">
+            <img id="logo" class="rounded mx-auto" src="../../static/img/logo_clinica.png">
+          </div>
+          <div class="col-8 d-flex align-items-center justify-content-center">
+            <h2 class="fw-bold text-primary-dark">Clinica Médica Económica de Cojutepeque</h2>
+          </div>
+          <div class="col-2 d-flex align-items-center justify-content-center">
+            <img id="logo" class="rounded mx-auto" src="../../static/img/logo_lab.png">
+          </div>
+        </div>
+      </div>
+      <!--Titulo del reporte-->
+      <div class="card-body">
+        <h2 class="fw-bold text-primary-dark text-center">Bitácora de Reportes Estratégicos</h2>
+      </div>
+      
+      <!--Resultados de Bitacora-->
+      <div class="card-body" id="resultado" >
+        <div>
+          <table class = "table table-striped text-center border" >
+            <thead>
+                <tr>
+                    <th>#</th>
+                    <th>Tipo reporte</th>
+                    <th>Usuario</th>
+                    <th>Fecha</th>
+                    <th>Parametros</th>
+                </tr>
+            </thead>
+            <tbody id="resultados-bitacora">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td>
+                        <button type="button" id="btn-ver" class="btn btn-success" onclick="">Ver</button>
+                    </td>
+                  </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+    </div>
+    
+    
+  </div>
+
+<style>
+
+h2,h3,h5{
+  color: #000034;
+}
+  .imagen{
+   
+    padding: 20px;
+    align-items: center;
+    justify-content: center;
+    
+
+  }
+  #logo{
+
+    width: 70%;
+    margin-left: 15%;
+    
+  }
+</style>
 {% endblock %}
 {% block js %}
+<script>
+    $( "#side_bre" ).addClass( "active" );
+    const url="{% url 'bitacoraRE' %}";
+</script>
 {% endblock %}
