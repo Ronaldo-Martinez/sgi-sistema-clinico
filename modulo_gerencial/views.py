@@ -24,6 +24,9 @@ def tactico03(request):
 def bitacoraTacticos(request):
     return render(request, 'BRT.html')
 
+def bitacoraAdmin(request):
+    return render(request, 'BRA.html')
+
 class Tactico01(TemplateView):
     template_name = "RT01.html"
     login_url='/login/'  
