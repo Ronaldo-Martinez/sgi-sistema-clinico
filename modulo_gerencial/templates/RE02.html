@@ -28,27 +28,24 @@
         <div class="card-body" >
           <form>
             <div class="form-group">
-              <label>Fecha Inicio</label>
-              <input type="date" class="form-control" id="fechaInicio" name="fechaInicio">
-            </div>
-            <br>
-            <div class="form-group">
-              <label>Fecha Fin</label>
-              <input type="date" class="form-control" id="fechaFin" name="fechaFin">
+              <label>Seleccione el año: </label>
+              <input type="number" class="form-control" id="seleccionarAnio" min="2000" max="2099" value='{%now "Y" %}'>
             </div>
             <br>
             <div class="form-group">
               <label>Tipo de Servicio</label>
               <select class="form-select" id="idServicio" name="idServicio">
-                <option value="">--Seleccione una categoria--</option>
-                <option>Clinica</option>
-                <option>Laboratorio</option>
-  
+                <option value="1">Clinica</option>
+                <option value="2">Laboratorio</option>
               </select>
             </div>
             <br>
-            <button class="btn btn-dark" type="button" onclick="mostrarResultado()">Consultar</button>
-            
+            <button class="btn btn-dark" type="button" onclick="consultarDatosDeConsultas()">Consultar</button>
+            <div class=" text-center pb-2">
+              <div class="spinner-border text-primary" role="status" id="spinner-1">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
           </form>
         </div>
       </div>
@@ -56,24 +53,30 @@
     <!--Resultados del reporte-->
     <div class="card-body" id="resultado" style="display: none;">
       <div>
-        <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha">Ingresos anuales por servicio de : servicio desde fechaInicio hasta fechaFin</h2>
-        <h5 class="fw-bold text-primary-dark text-center" style="padding-top: 20px;">Generado por: usuario1 el fecha a las hora 19:30 </h3>
+        <h5 class="fw-bold text-primary-dark text-center" id="titulo-fecha"></h2>
+        <h5 class="text-primary-dark text-center">Generado por: {{ request.user.nombres }} {{ request.user.apellidos }} el {%now "d-m-Y" %} a las  {% now "H:i" %}. </h3>
         <br>
         <table class = "table table-striped text-center border" >
-          <thead>
+          <thead id="head-informe">
               <tr>
                   <th>Servicio</th>
-                  <th>Ingresos</th>
-
+                  <th>Ingresos año anterior</th>
+                  <th>Ingresos año actual</th>
+                  <th>Variación</th>
               </tr>
           </thead>
-          <tbody>
+          <tbody id="resultados-informe">
               <tr>
-                  <td></td>
-                  <td></td>
-                </tr>
+                <td></td>
+                <td></td>
+              </tr>
           </tbody>
         </table>
+        <div class=" text-center pb-2">
+          <div class="spinner-border text-primary" role="status" id="spinner">
+            <span class="visually-hidden">Loading...</span>
+          </div>
+        </div>
       </div>
       <div >
         <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
@@ -110,17 +113,112 @@ color: #000034;
 <script>
     $( "#side_re02" ).addClass( "active" );
     url="{% url 'vistaRE02' %}";
+    $('#spinner-1').hide()
     function mostrarResultado() {
       document.getElementById('formulario').style.display = 'none';
       document.getElementById('resultado').style.display = 'block';
-
+      let idServicio = $('#idServicio').val();
+      let Servicio=$('#idServicio').find(`option[value='${idServicio}']`).text();
+      let anioActual=$('#seleccionarAnio').val()
+      $('#titulo-fecha').html("");
+      $('#titulo-fecha').append(`Para servicios de: ${Servicio}, realizados para el año ${anioActual}`)
     }
     function nuevoForm(){
       document.getElementById('resultado').style.display = 'none';
       document.getElementById('formulario').style.display = 'block';
-      $('#fechaInico').val('');
-      $('#fechaFin').val('');
+      $('#spinner-1').hide();
       $('#idServicio').val('');
     }
+
+    function consultarClinica(fechaInicio, fechaFin) {
+      return new Promise(function(resolve, reject) {
+        $.ajax({
+          url: 'http://clinica.code-rm.tk/expediente/sgi/consultas',
+          type: "GET",
+          dataType: "json",
+          data: { 
+            'fecha': fechaInicio,
+            'fechaFin': fechaFin
+          },
+          success: function(data) {
+            resolve(data);
+          },
+          error: function(error) {
+            reject(error);
+          }
+        });
+      });
+    }
+
+    async function consultarDatosDeConsultas() {
+      $('#spinner-1').show();
+      $('#spinner').show();
+      $('#resultados-informe').html("");
+      // Obtener las fechas ingresadas en los inputs
+      let anioActual=$('#seleccionarAnio').val()
+      let fechaInicioActual = `${anioActual}-01-01`
+      let fechaFinActual = `${anioActual}-12-31`
+
+      // Copiar las fechas originales
+      let fechaInicioAnioAnterior = `${anioActual-1}-01-01`
+      let fechaFinAnioAnterior = `${anioActual-1}-12-31`
+
+      $('#spinner').show();
+
+      try {
+        if ($('#idServicio').val()==='1'){
+          let dataActual = await consultarClinica(fechaInicioActual, fechaFinActual);
+          let dataAnterior = await consultarClinica(fechaInicioAnioAnterior, fechaFinAnioAnterior);
+          imprimirResultadosClinica(dataActual, dataAnterior, anioActual)
+          mostrarResultado();
+        }
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    function imprimirResultadosClinica(dataActual, dataAnterior, anioActual){
+      toastr[dataActual.type](dataActual.title);
+      
+      let ingresosActuales=0;
+      let ingresosAnteriores=0;
+      let variacion;
+
+      dataActual.data.map((dato)=>{
+        ingresosActuales=ingresosActuales+parseFloat(dato.consumo_medico);
+      })
+      dataAnterior.data.map((dato)=>{
+        ingresosAnteriores=ingresosAnteriores+parseFloat(dato.consumo_medico);
+      })
+
+      if (ingresosAnteriores!==0){
+        variacion=(((ingresosActuales-ingresosAnteriores)/ingresosAnteriores)*100).toFixed(2);
+      }
+      else {
+        variacion=100;
+      }
+      
+      $('#head-informe').html('');
+      $('#head-informe').append(`
+          <tr>
+            <td>Servicio</td>
+            <td>Ingresos año ${anioActual-1}</td>
+            <td>Ingresos año ${anioActual}</td>
+            <td>Variación</td>
+          </tr>
+        `);
+      
+      $('#resultados-informe').append(`
+          <tr>
+            <td>Clinica</td>
+            <td>$ ${ingresosAnteriores}</td>
+            <td>$ ${ingresosActuales}</td>
+            <td>${variacion}%</td>
+          </tr>
+          `);
+      $('#spinner').hide();
+    }
+
+
   </script>
 {% endblock %}

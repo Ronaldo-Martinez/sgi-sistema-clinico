@@ -33,8 +33,30 @@ class Estrategico01(TemplateView):
         self.response['title']='Se han almacenado los parametros del reporte.'
         return JsonResponse(self.response)
 
-def estrategico02(request):
-    return render(request, 'RE02.html')
+class Estrategico02(TemplateView):
+    template_name = "RE02.html"
+    login_url='/login/'  
+    response={'type':'','title':'', 'info':''}
+    def get(self, request, *args, **kwargs):
+        return render(request,self.template_name)
+    def post(self, request, *args, **kwargs):
+        fecha_inicio = datetime.strptime(request.POST.get('fecha_inicio'), "%Y-%m-%d").date()
+        fecha_fin=datetime.strptime(request.POST.get('fecha_fin'), "%Y-%m-%d").date()
+        idCategoria=request.POST.get('idCategoria')
+        reporte=Reporte.objects.create(
+            empleado=request.user,
+            tipo_reporte=1,
+            fecha_inicio=fecha_inicio,
+            fecha_fin=fecha_fin
+        )
+        FiltroReporte.objects.create(
+            reporte=reporte,
+            valor=idCategoria
+        )
+        self.response['type']='success'
+        self.response['title']='Se han almacenado los parametros del reporte.'
+        return JsonResponse(self.response)
+    
 
 def bitacoraEstrategicos(request):
     return render(request, 'BRE.html')
