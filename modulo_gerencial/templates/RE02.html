@@ -79,7 +79,7 @@
         </div>
       </div>
       <div >
-        <button type="button" id="btn-guardar" class="btn btn-success" >Guadar Parametros Reporte</button>
+        <button type="button" id="btn-guardar" class="btn btn-success" onclick="almacenarDatosReporte();">Guadar Parametros Reporte</button>
         <button type="button" id="btn-nuevo-form" class="btn btn-dark" onclick="nuevoForm();">Generar nuevo informe</button>
     </div>
     
@@ -172,6 +172,15 @@ color: #000034;
           imprimirResultadosClinica(dataActual, dataAnterior, anioActual)
           mostrarResultado();
         }
+        else {
+          let dataActual = await consultarLaboratorio(fechaInicioActual, fechaFinActual);
+          let dataAnterior = await consultarLaboratorio(fechaInicioAnioAnterior, fechaFinAnioAnterior);
+          let dataActualCategorizada = categorizar(dataActual);
+          let dataAnteriorCategorizada = categorizar(dataAnterior);
+          imprimirResultadosLaboratorio(dataActualCategorizada, dataAnteriorCategorizada, anioActual);
+          toastr[dataActual.type](dataActual.title);
+          mostrarResultado();
+        }
       } catch (error) {
         console.error(error);
       }
@@ -219,6 +228,111 @@ color: #000034;
       $('#spinner').hide();
     }
 
+    //LABORATORIO
+    function consultarLaboratorio(fechaInicio, fechaFin) {
+      return new Promise(function(resolve, reject) {
+        $.ajax({
+          url: 'http://clinica.code-rm.tk/laboratorio/sgi-reporte/',
+          type:"GET",
+          dataType: "json",
+          data: { 
+            'fechaInicio': fechaInicio,
+            'fechaFin': fechaFin,
+            'idCategoria': 'TODOS',
+          },
+          success: function(data) {
+            resolve(data);
+          },
+          error: function(error) {
+            reject(error);
+          }
+        });
+      });
+    }
+    function categorizar(jsonData){
+      const categorizedData = {};
 
+        // Clasificar los datos por categoría
+        jsonData.data.forEach((item) => {
+          const nombreExamen = item.examen_laboratorio.nombre_examen;
+          const precioExamen = parseFloat(item.examen_laboratorio.precio_examen);
+          const idExamen = item.examen_laboratorio.id_examen_laboratorio;
+
+          if (categorizedData[nombreExamen]) {
+            categorizedData[nombreExamen].total += precioExamen;
+          } else {
+            categorizedData[nombreExamen] = {
+              nombre_examen: nombreExamen,
+              total: precioExamen,
+              id_examen_laboratorio: idExamen
+            };
+          }
+        });
+
+        // Convertir los datos clasificados en un array de objetos
+        const categorizedArray = Object.values(categorizedData).sort((a, b) => a.id_examen_laboratorio - b.id_examen_laboratorio);
+
+        return categorizedArray;
+    }
+    
+    function imprimirResultadosLaboratorio(dataActual, dataAnterior, anioActual){
+      
+      //Colocando el header de la tabla
+      $('#head-informe').html('');
+      $('#head-informe').append(`
+          <tr>
+            <th>Servicio</td>
+            <th>Ingresos año ${anioActual-1}</td>
+            <th>Ingresos año ${anioActual}</td>
+            <th>Variación</td>
+          </tr>
+        `);
+      let size=(dataActual.length!==0)? dataActual.length : dataAnterior.length
+      for(let i=0; i<size; i++){
+        let nombreExamen=(dataActual[i]?.nombre_examen ?? "" !== "")? dataActual[i].nombre_examen: dataAnterior[i].nombre_examen
+        let ingresosActuales=dataActual[i]?.total ?? 0;
+        let ingresosAnteriores=dataAnterior[i]?.total ?? 0;
+        let variacion=0;
+        if(ingresosAnteriores!==0){
+          variacion=(((ingresosActuales-ingresosAnteriores)/ingresosAnteriores)*100).toFixed(2);
+        }
+        else{
+          variacion=100
+        }
+        
+
+        $('#resultados-informe').append(`
+          <tr>
+            <td>Examen de: ${nombreExamen}</td>
+            <td>$ ${ingresosAnteriores}</td>
+            <td>$ ${ingresosActuales}</td>
+            <td>${variacion}%</td>
+          </tr>
+          `);
+      }
+
+      $('#spinner').hide();
+    }
+
+    ///REPORTE
+    function almacenarDatosReporte(){
+      $.ajax({
+        url: "{% url 'vistaRE02' %}",
+        type:"POST",
+        dataType: "json",
+        headers: {
+                "X-CSRFToken": '{{ csrf_token }}',
+            },
+        data: { 
+            'year': $('#seleccionarAnio').val(),
+            'idServicio': $('#idServicio').val(),
+          },
+          success: async function(data){
+            toastr[data.type](data.title);
+            //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+            
+          }      
+      });
+    }
   </script>
 {% endblock %}

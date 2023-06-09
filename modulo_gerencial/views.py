@@ -40,19 +40,21 @@ class Estrategico02(TemplateView):
     def get(self, request, *args, **kwargs):
         return render(request,self.template_name)
     def post(self, request, *args, **kwargs):
-        fecha_inicio = datetime.strptime(request.POST.get('fecha_inicio'), "%Y-%m-%d").date()
-        fecha_fin=datetime.strptime(request.POST.get('fecha_fin'), "%Y-%m-%d").date()
-        idCategoria=request.POST.get('idCategoria')
+        fecha_inicio = datetime.strptime(f"{request.POST.get('year')}-01-01", "%Y-%m-%d").date()
+        fecha_fin=datetime.strptime(f"{request.POST.get('year')}-12-31", "%Y-%m-%d").date()
+        idServicio=request.POST.get('idServicio')
+
         reporte=Reporte.objects.create(
             empleado=request.user,
-            tipo_reporte=1,
+            tipo_reporte=2,
             fecha_inicio=fecha_inicio,
             fecha_fin=fecha_fin
         )
         FiltroReporte.objects.create(
             reporte=reporte,
-            valor=idCategoria
+            valor=idServicio
         )
+
         self.response['type']='success'
         self.response['title']='Se han almacenado los parametros del reporte.'
         return JsonResponse(self.response)
