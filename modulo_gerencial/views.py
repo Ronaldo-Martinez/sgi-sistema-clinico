@@ -67,7 +67,10 @@ def bitacoraTacticos(request):
     return render(request, 'BRT.html')
 
 def bitacoraAdmin(request):
-    return render(request, 'BRA.html')
+    reportes = Reporte.objects.all()
+    for reporte in reportes:
+        reporte.filtros = reporte.filtroreporte_set.all()
+    return render(request, 'BRA.html', {'reportes': reportes})
 
 class Tactico01(TemplateView):
     template_name = "RT01.html"
