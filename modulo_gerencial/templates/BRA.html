@@ -37,21 +37,108 @@
                 </tr>
             </thead>
             <tbody id="resultados-bitacora">
+              {% for reporte in reportes %}
                 <tr>
-                    <td></td>
-                    <td></td>
-                    <td></td>
-                    <td></td>
+                    <td>{{ forloop.counter }}</td>
+                    <td>{{ reporte.get_tipo_reporte_display }}</td>
+                    <td>{{ reporte.empleado_id }}</td>
+                    <td>{{ reporte.fecha_hora_reporte }}</td>
                     <td>
-                        <button type="button" id="btn-ver" class="btn btn-success" onclick="">Ver</button>
+                      {% if reporte.filtroreporte_set.all %}
+                      <button 
+                        type="button" 
+                        id="btn-ver-{{ forloop.counter }}" 
+                        class="btn btn-success"  
+                        data-bs-toggle="modal" 
+                        href="#exampleModalToggle"
+                        onclick='imprimirInformes(`{{reporte.tipo_reporte}}`,`{{ reporte.fecha_inicio|date:"Y-m-d" }}`, `{{reporte.fecha_fin|date:"Y-m-d"}}`,`{{ reporte.fecha_inicio }}`, `{{reporte.fecha_fin}}`,`{{ reporte.filtroreporte_set.all.0.valor }}`)'
+                      >Ver</button>
+                      {% else %}
+                      <button 
+                          type="button" 
+                          id="btn-ver-{{ forloop.counter }}" 
+                          class="btn btn-success"  
+                          data-bs-toggle="modal" 
+                          href="#exampleModalToggle"
+                          onclick='imprimirInformes(`{{reporte.tipo_reporte}}`,`{{ reporte.fecha_inicio|date:"Y-m-d" }}`, `{{reporte.fecha_fin|date:"Y-m-d"}}`,`{{ reporte.fecha_inicio }}`, `{{reporte.fecha_fin}}`,"")'
+                        >Ver</button>
+                      {% endif %}
                     </td>
                   </tr>
+              {% endfor %}
             </tbody>
           </table>
         </div>
       </div>
       
     </div>
+    <!--MODAL-->
+    <div class="modal fade" id="exampleModalToggle" aria-hidden="true" data-bs-backdrop="static" data-bs-keyboard="false" aria-labelledby="exampleModalToggleLabel" tabindex="-1">
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="tituloModal"></h5>
+            <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+          </div>
+          <div class="modal-body">
+            <!--Tabla para informes estrategicos 01-->
+            <div id="tabla-es-01">
+              <table class = "table table-striped text-center border" >
+                <thead>
+                    <tr>
+                        <th>Exámen</th>
+                        <th>Frecuencia</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-mas-frecuentes">
+                    <tr>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                </tbody>
+              </table>
+              <br>
+              <h5 class="fw-bold text-primary-dark text-center">Exámenes menos frecuentes</h4>
+              <table class = "table table-striped text-center border" >
+                <thead>
+                    <tr>
+                        <th>Exámen</th>
+                        <th>Frecuencia</th>
+                    </tr>
+                </thead>
+                <tbody id="tabla-menos-frecuentes">
+                    <tr>
+                        <td></td>
+                        <td></td>
+                      </tr>
+                </tbody>
+              </table>
+            </div>
+
+            <div id="tabla-es-02">
+            </div>
+            <div id="tabla-tc-01">
+            </div>
+            <div id="tabla-tc-02">
+            </div>
+            <div id="tabla-tc-03">
+            </div>
+
+            <div class=" text-center pb-2">
+              <div class="spinner-border text-primary" role="status" id="spinner">
+                <span class="visually-hidden">Loading...</span>
+              </div>
+            </div>
+            <!--Tabla para informes estrategicos 01-->
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cerrar</button>
+            <button class="btn btn-primary" data-bs-target="#exampleModalToggle2" data-bs-toggle="modal" data-bs-dismiss="modal">Ver otro</button>
+          </div>
+        </div>
+      </div>
+    </div>
+</div>
     
     
   </div>
@@ -79,7 +166,673 @@ h2,h3,h5{
 {% endblock %}
 {% block js %}
 <script>
-    $( "#side_bra" ).addClass( "active" );
+    $("#side_bra").addClass( "active" );
+    $("#tabla-es-01").hide();
     const url="{% url 'bitacoraRA' %}";
+
+    function imprimirInformes(tipoInforme, fechaInicio, fechaFin, tituloFechaInicio, tituloFechaFin,filtro){
+      $("#tabla-es-01").hide();
+      $("#tabla-es-02").html('');
+      $("#tabla-tc-01").html('');
+      $("#tabla-tc-02").html('');
+      $("#tabla-tc-03").html('');
+      switch (tipoInforme) {
+        case '1':
+          reporteEstrategico01(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin);
+          break;
+        case '2':
+          reporteEstrategico02(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin);
+          break;
+        case '3':
+          reporteTactico01(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin);
+          break;
+        case '4':
+          reporteTactico02(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin);
+          break;
+        case '5':
+          reporteTactico03(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin);
+          break;
+        default:
+          console.log("Opción no válida");
+          break;
+      }
+    }
+
+      function reporteEstrategico01(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin){
+        consultarExamenes(fechaInicio, fechaFin, filtro)
+        $("#tabla-es-01").show();
+        $('#tituloModal').html(`Reporte Estrategico 01: ${tituloFechaInicio} - ${tituloFechaFin}.`);
+        //ESTRATEGICO 01
+          function consultarExamenes(fechaInicio, fechaFin, filtro){
+            $('#spinner').show();
+            $.ajax({
+              url: 'http://clinica.code-rm.tk/laboratorio/sgi-reporte/',
+              type:"GET",
+              dataType: "json",
+              data: { 
+                  'fechaInicio': fechaInicio,
+                  'fechaFin': fechaFin,
+                  'idCategoria': filtro,
+                },
+                success: async function(data){
+                  toastr[data.type](data.title);
+                  if(data.type==='success'){
+                    imprimirResultadosE01(data);
+                  }
+        
+                }      
+            });
+          }
+          
+          function imprimirResultadosE01(data){
+            //variables
+            $('#tabla-mas-frecuentes').html("");
+            $('#tabla-menos-frecuentes').html("");
+            let examenesFrecuentes = contarExamenesFrecuentes(data.data);
+            let masAlto=0;
+            //Contando los datos
+            masAlto=masFrecuente(examenesFrecuentes);
+            for(let examen in examenesFrecuentes){
+              let valor = examenesFrecuentes[examen];
+              //La mitad más alta
+              if(valor > (masAlto/2)){
+                $('#tabla-mas-frecuentes').append(`
+                <tr>
+                  <td>${examen}</td>
+                  <td>${valor}</td>
+                </tr>
+              `);
+              }
+              //mitad menos alta
+              else{
+                $('#tabla-menos-frecuentes').append(`
+                <tr>
+                  <td>${examen}</td>
+                  <td>${valor}</td>
+                </tr>
+              `);
+              }
+            }
+            $('#spinner').hide();
+          }
+
+          function contarExamenesFrecuentes(resultados) {
+            let examenesFrecuentes = {};
+            
+            // Contar la frecuencia de cada examen
+            resultados.forEach(function(resultado) {
+              var examen = resultado.examen_laboratorio.nombre_examen;
+              
+              if (examen in examenesFrecuentes) {
+                examenesFrecuentes[examen]++;
+              } else {
+                examenesFrecuentes[examen] = 1;
+              }
+            });
+            
+            return examenesFrecuentes;
+          }
+
+          function masFrecuente(frecuencias){
+            let masAlto=0;
+            for(let frecuencia in frecuencias){
+              let valor = frecuencias[frecuencia];
+              console.log(valor)
+              if(valor> masAlto){
+                masAlto=valor;
+              }
+            }
+            return masAlto;
+          }
+
+      }
+
+      function reporteEstrategico02(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin){
+        $("#tabla-es-02").html(`
+        <table class = "table table-striped text-center border" >
+            <thead id="head-informe">
+                <tr>
+                    <th>Servicio</th>
+                    <th>Ingresos año anterior</th>
+                    <th>Ingresos año actual</th>
+                    <th>Variación</th>
+                </tr>
+            </thead>
+            <tbody id="resultados-informe">
+                <tr>
+                  <td></td>
+                  <td></td>
+                </tr>
+            </tbody>
+        </table>
+        `);
+        $('#tituloModal').html(`Reporte Estrategico 02: ${tituloFechaInicio} - ${tituloFechaFin}.`);
+        consultarDatosDeConsultas(fechaInicio, fechaFin, filtro);
+
+        //Funciones
+
+        function consultarClinica(fechaInicio, fechaFin) {
+        return new Promise(function(resolve, reject) {
+          $.ajax({
+            url: 'http://clinica.code-rm.tk/expediente/sgi/consultas',
+            type: "GET",
+            dataType: "json",
+            data: { 
+              'fecha': fechaInicio,
+              'fechaFin': fechaFin
+            },
+            success: function(data) {
+              resolve(data);
+            },
+            error: function(error) {
+              reject(error);
+            }
+          });
+        });
+      }
+
+        async function consultarDatosDeConsultas(fechaInicio, fechaFin, filtro) {
+          $('#spinner').show();
+          $('#resultados-informe').html("");
+          // Obtener las fechas ingresadas en los inputs
+          let anioActual=fechaInicio.substring(0, 4);
+          let fechaInicioActual = `${anioActual}-01-01`
+          let fechaFinActual = `${anioActual}-12-31`
+
+          // Copiar las fechas originales
+          let fechaInicioAnioAnterior = `${anioActual-1}-01-01`
+          let fechaFinAnioAnterior = `${anioActual-1}-12-31`
+
+          $('#spinner').show();
+
+          try {
+            if (filtro==='1'){
+              let dataActual = await consultarClinica(fechaInicioActual, fechaFinActual);
+              let dataAnterior = await consultarClinica(fechaInicioAnioAnterior, fechaFinAnioAnterior);
+              imprimirResultadosClinica(dataActual, dataAnterior, anioActual)
+              mostrarResultado();
+            }
+            else {
+              let dataActual = await consultarLaboratorio(fechaInicioActual, fechaFinActual);
+              let dataAnterior = await consultarLaboratorio(fechaInicioAnioAnterior, fechaFinAnioAnterior);
+              let dataActualCategorizada = categorizar(dataActual);
+              let dataAnteriorCategorizada = categorizar(dataAnterior);
+              imprimirResultadosLaboratorio(dataActualCategorizada, dataAnteriorCategorizada, anioActual);
+              toastr[dataActual.type](dataActual.title);
+              mostrarResultado();
+            }
+          } catch (error) {
+            console.error(error);
+          }
+        }
+
+        function imprimirResultadosClinica(dataActual, dataAnterior, anioActual){
+          toastr[dataActual.type](dataActual.title);
+          
+          let ingresosActuales=0;
+          let ingresosAnteriores=0;
+          let variacion;
+
+          dataActual.data.map((dato)=>{
+            ingresosActuales=ingresosActuales+parseFloat(dato.consumo_medico);
+          })
+          dataAnterior.data.map((dato)=>{
+            ingresosAnteriores=ingresosAnteriores+parseFloat(dato.consumo_medico);
+          })
+
+          if (ingresosAnteriores!==0){
+            variacion=(((ingresosActuales-ingresosAnteriores)/ingresosAnteriores)*100).toFixed(2);
+          }
+          else {
+            variacion=100;
+          }
+          
+          $('#head-informe').html('');
+          $('#head-informe').append(`
+              <tr>
+                <td>Servicio</td>
+                <td>Ingresos año ${anioActual-1}</td>
+                <td>Ingresos año ${anioActual}</td>
+                <td>Variación</td>
+              </tr>
+            `);
+          
+          $('#resultados-informe').append(`
+              <tr>
+                <td>Clinica</td>
+                <td>$ ${ingresosAnteriores}</td>
+                <td>$ ${ingresosActuales}</td>
+                <td>${variacion}%</td>
+              </tr>
+              `);
+          $('#spinner').hide();
+        }
+
+        //LABORATORIO
+        function consultarLaboratorio(fechaInicio, fechaFin) {
+          return new Promise(function(resolve, reject) {
+            $.ajax({
+              url: 'http://clinica.code-rm.tk/laboratorio/sgi-reporte/',
+              type:"GET",
+              dataType: "json",
+              data: { 
+                'fechaInicio': fechaInicio,
+                'fechaFin': fechaFin,
+                'idCategoria': 'TODOS',
+              },
+              success: function(data) {
+                resolve(data);
+              },
+              error: function(error) {
+                reject(error);
+              }
+            });
+          });
+        }
+        function categorizar(jsonData){
+          const categorizedData = {};
+
+            // Clasificar los datos por categoría
+            jsonData.data.forEach((item) => {
+              const nombreExamen = item.examen_laboratorio.nombre_examen;
+              const precioExamen = parseFloat(item.examen_laboratorio.precio_examen);
+              const idExamen = item.examen_laboratorio.id_examen_laboratorio;
+
+              if (categorizedData[nombreExamen]) {
+                categorizedData[nombreExamen].total += precioExamen;
+              } else {
+                categorizedData[nombreExamen] = {
+                  nombre_examen: nombreExamen,
+                  total: precioExamen,
+                  id_examen_laboratorio: idExamen
+                };
+              }
+            });
+
+            // Convertir los datos clasificados en un array de objetos
+            const categorizedArray = Object.values(categorizedData).sort((a, b) => a.id_examen_laboratorio - b.id_examen_laboratorio);
+
+            return categorizedArray;
+        }
+        
+        function imprimirResultadosLaboratorio(dataActual, dataAnterior, anioActual){
+        
+          //Colocando el header de la tabla
+          $('#head-informe').html('');
+          $('#head-informe').append(`
+              <tr>
+                <th>Servicio</td>
+                <th>Ingresos año ${anioActual-1}</td>
+                <th>Ingresos año ${anioActual}</td>
+                <th>Variación</td>
+              </tr>
+            `);
+          let size=(dataActual.length!==0)? dataActual.length : dataAnterior.length
+          for(let i=0; i<size; i++){
+            let nombreExamen=(dataActual[i]?.nombre_examen ?? "" !== "")? dataActual[i].nombre_examen: dataAnterior[i].nombre_examen
+            let ingresosActuales=dataActual[i]?.total ?? 0;
+            let ingresosAnteriores=dataAnterior[i]?.total ?? 0;
+            let variacion=0;
+            if(ingresosAnteriores!==0){
+              variacion=(((ingresosActuales-ingresosAnteriores)/ingresosAnteriores)*100).toFixed(2);
+            }
+            else{
+              variacion=100
+            }
+            
+
+            $('#resultados-informe').append(`
+              <tr>
+                <td>Examen de: ${nombreExamen}</td>
+                <td>$ ${ingresosAnteriores}</td>
+                <td>$ ${ingresosActuales}</td>
+                <td>${variacion}%</td>
+              </tr>
+              `);
+          }
+
+          $('#spinner').hide();
+        }
+      
+      }
+
+      function reporteTactico01(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin){
+        $("#tabla-tc-01").html(`
+          <table class = "table table-striped text-center border" >
+            <thead>
+                <tr>
+                    <th>Médico</th>
+                    <th>Pacientes Atendidos</th>
+                    <th>Pacientes con Signos Vitales Tomados</th>
+                    <th>Ingresos Diarios</th>
+                </tr>
+            </thead>
+            <tbody id="resultados-informe">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                  </tr>
+            </tbody>
+          </table>
+        `);
+        $('#tituloModal').html(`Reporte Tactico 01: ${tituloFechaInicio}.`);
+        
+        mostrarResultado(fechaInicio);
+        $('#spinner').hide();
+        async function mostrarResultado(fechaInicio) {
+        //Si existe una fecha
+        fecha=fechaInicio;
+        $.ajax({
+          url: 'http://clinica.code-rm.tk/expediente/sgi/consultas',
+          type:"GET",
+          dataType: "json",
+          data: { 
+              'fecha': fechaInicio,
+            },
+            success: async function(data){
+              //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+              let empleados = await jsonEmpleados();
+              let medicos =empleados.filter(function(empleado) {
+                return empleado.nombre_rol === 'Doctor';
+              });
+              imprimirResultados(data, medicos);
+            }      
+        });
+
+      }
+        //Función para consultas los datos del reporte
+        function imprimirResultados(data, medicos){
+          //notificación
+          toastr[data.type](data.title);
+          //variables
+          let contador = {};
+          let ingresos = {};
+          let totalPacientes=0;
+          let totalIngresos=0;
+          //Contando los datos
+          data.data.forEach(item=>{
+            let id = item.consulta.doctor;
+            if (contador[id]) {
+              contador[id]++;
+              ingresos[id]=ingresos[id]+parseFloat(item.consumo_medico);
+            } else {
+              contador[id] = 1;
+              ingresos[id]=parseFloat(item.consumo_medico);
+            } 
+          })
+          //Imprimiendo las filas
+          $('#resultados-informe').html("")
+          for (var id in contador) {
+            medico=medicos.filter((empleado)=>{
+              return empleado.codigo_empleado === id;
+            })
+            console.log(medico)
+            $('#resultados-informe').append(`
+              <tr>
+                <td>${medico[0].nombres} ${medico[0].apellidos}</td>
+                <td>${contador[id]}</td>
+                <td>${contador[id]}</td>
+                <td>$ ${ingresos[id]}</td>
+              </tr>
+            `);
+            totalPacientes=totalPacientes+contador[id];
+            totalIngresos=totalIngresos+ingresos[id];
+          }
+          $('#resultados-informe').append(`
+              <tr>
+                <th>Total</th>
+                <th>${totalPacientes}</th>
+                <th>${totalPacientes}</th>
+                <th>$ ${totalIngresos}</th>
+              </tr>
+            `);
+        }
+        
+        async function jsonEmpleados(){
+        let data = await fetch('http://clinica.code-rm.tk/control/empleados/lista/')
+          .then(function(response) {
+            if (response.ok) {
+              return response.json();
+            }
+            throw new Error('Error en la solicitud HTTP');
+          })
+          .catch(function(error) {
+            // Manejar el error de la solicitud
+            console.error(error);
+          });
+        return data;
+      }
+
+        }
+
+      function reporteTactico02(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin){
+        $("#tabla-tc-02").html(`
+          <table class = "table table-striped text-center border" >
+            <thead>
+                <tr>
+                    <th>Fecha</th>
+                    <th>Exámenes Realizados</th>
+                    <th>Resultados Entregados</th>
+                    <th>Ingresos Diarios</th>
+                </tr>
+            </thead>
+            <tbody id="resultados-informe">
+
+            </tbody>
+          </table>
+        `);
+        $('#tituloModal').html(`Reporte Tactico 02: ${tituloFechaInicio} - ${tituloFechaFin}.`);
+        consultarExamenes(fechaInicio, fechaFin, filtro);
+        $('#spinner').hide();
+        
+        function consultarExamenes(fechaInicio, fechaFin, filtro){
+          $.ajax({
+            url: 'http://clinica.code-rm.tk/laboratorio/sgi-reporte/',
+            type:"GET",
+            dataType: "json",
+            data: { 
+                'fechaInicio': fechaInicio,
+                'fechaFin': fechaFin,
+                'idExamen': filtro,
+              },
+              success: async function(data){
+                toastr[data.type](data.title);
+                if(data.type==='success'){
+                  imprimirResultados(data);
+                }
+      
+              }      
+          });
+        }
+    //Función para consultas los datos del reporte
+        function imprimirResultados(data){
+          //variables
+          let contador = {};
+          let ingresos = {};
+          let fecha = {};
+          let totalExamen=0;
+          let totalResultado=0;
+          let totalIngresos=0;
+          //Contando los datos
+          data.data.forEach(item=>{
+            let id = item.fecha_creacion;
+            id= id.substring(0, 10);
+            if (contador[id]) {
+              contador[id]++;
+              ingresos[id]=ingresos[id]+parseFloat(item.examen_laboratorio.precio_examen);
+            } else {
+              fecha[id]=item.fecha_creacion.substring(0, 10);
+              contador[id] = 1;
+              ingresos[id]=parseFloat(item.examen_laboratorio.precio_examen);
+            } 
+          })
+          //Imprimiendo las filas
+          $('#resultados-informe').html("")
+          for (var id in contador) {
+
+            $('#resultados-informe').append(`
+              <tr>
+                <td>${fecha[id]}</td>
+                <td>${contador[id]}</td>
+                <td>${contador[id]}</td>
+                <td>$ ${ingresos[id]}</td>
+              </tr>
+            `);
+            totalResultado=totalResultado+contador[id];
+            totalIngresos=totalIngresos+ingresos[id];
+          }
+          $('#resultados-informe').append(`
+              <tr>
+                <th>Total</th>
+                <th>${totalResultado}</th>
+                <th>${totalResultado}</th>
+                <th>$ ${totalIngresos}</th>
+              </tr>
+            `);
+        }
+      }
+    
+      function reporteTactico03(fechaInicio, fechaFin, filtro, tituloFechaInicio, tituloFechaFin){
+        $("#tabla-tc-03").html(`
+          <table class = "table table-striped text-center border" >
+            <thead>
+              <tr>
+                <th>Fecha</th>
+                <th>Médico</th>
+                <th>Tiempo de Espera(min)</th>
+                <th>Tiempo de consulta(min)</th>
+                <th>Tiempo promedio total(min)</th>
+              </tr>
+            </thead>
+            <tbody id="resultados-informe">
+            </tbody>
+          </table>
+        `);
+        $('#tituloModal').html(`Reporte Tactico 03: ${tituloFechaInicio} - ${tituloFechaFin}.`);
+        $('#spinner').show();
+        consultarDatosDeConsultas(fechaInicio, fechaFin, filtro);
+
+        function consultarDatosDeConsultas(fechaInicio, fechaFin, filtro){
+          $.ajax({
+            url: 'http://clinica.code-rm.tk/expediente/sgi/consultas',
+            type:"GET",
+            dataType: "json",
+            data: { 
+                'fecha':fechaInicio,
+                'fechaFin':fechaFin
+              },
+              success: async function(data){
+                $('#resultados-informe').html("");
+                //Se consulta la lista de empleados y se pasa como parametro los datos de la consulta inicial
+                let empleados = await jsonEmpleados();
+                imprimirResultados(data, empleados);
+              }      
+          });
+        }
+        async function jsonEmpleados(){
+          let data = await fetch('http://clinica.code-rm.tk/control/empleados/lista/')
+            .then(function(response) {
+              if (response.ok) {
+                return response.json();
+              }
+              throw new Error('Error en la solicitud HTTP');
+            })
+            .catch(function(error) {
+              // Manejar el error de la solicitud
+              console.error(error);
+            });
+            data= data.filter(function(empleado) {
+                  return empleado.nombre_rol === 'Doctor';
+                });
+          return data;
+        }
+    
+        function imprimirResultados(data, empleados){
+          toastr[data.type](data.title);
+          //limpiando tabla
+          let datosFiltrados=[];
+          let nombres=[];
+          let totalMinutosEspera=0;
+          let totalMinutosConsulta=0;
+          let totalMinutos=0;
+          let contador=0;
+          //Filtrando datos por medico
+          empleados.forEach(medico=>{
+            id=medico.codigo_empleado
+            datosFiltrados[id]=data.data.filter((item)=>{
+              return item.consulta.doctor===id;
+            })
+            nombres[id]=`${medico.nombres} ${medico.apellidos}`
+          });
+          //Recorriendo datos filtrados
+          for(const id in datosFiltrados){
+            let fechas={}
+            let sumatoriasEspera=[]
+            let sumatoriasConsulta=[]
+            let contadores={}
+            let nombreDoctores={}
+            //Recorriendo array filtrado para cada doctor
+            datosFiltrados[id].forEach(item=>{
+              let id=item.fecha_de_cola;
+              let horaIngreso = new Date(`1970-01-01T${item.hora_de_ingreso}Z`);
+              let horaInicioConsulta = new Date(`1970-01-01T${item.consulta.hora_inicio}Z`);
+              let horaFinConsulta = new Date(`1970-01-01T${item.consulta.hora_fin}Z`);
+              if(fechas[id]){
+                //Si se suma un nuevo elmento
+                sumatoriasEspera[id]=sumatoriasEspera[id]+(horaInicioConsulta-horaIngreso);
+                sumatoriasConsulta[id]=sumatoriasConsulta[id]+(horaFinConsulta-horaInicioConsulta);
+                contadores[id]++;
+              }
+              else{
+                //Si se inicia el conteo
+                sumatoriasEspera[id]=horaInicioConsulta-horaIngreso; //tiempo de espera en milisegundos
+                sumatoriasConsulta[id]=horaFinConsulta-horaInicioConsulta;
+                contadores[id]=1;
+                fechas[id]=id
+              }
+            })
+            
+            for(const fecha in fechas){
+              let minutos=(sumatoriasEspera[fecha]/contadores[fecha])/60000;
+              let minutosconsulta=(sumatoriasConsulta[fecha]/contadores[fecha])/60000;
+              let minutosTotal=minutos+minutosconsulta;
+              //totales
+              totalMinutosEspera=totalMinutosEspera+minutos;
+              totalMinutosConsulta=totalMinutosConsulta+minutosconsulta;
+              totalMinutos=totalMinutos+minutosTotal;
+              contador++;
+              //datos para imprimir
+              minutosEspera= minutos.toFixed(2);
+              minutosconsulta=minutosconsulta.toFixed(2);
+              minutosTotal=minutosTotal.toFixed(2);
+              $('#resultados-informe').append(`
+              <tr>
+                <td>${fecha}</td>
+                <td>${nombres[id]}</td>
+                <td>${minutosEspera}</td>
+                <td>${minutosconsulta}</td>
+                <td>${minutosTotal}</td>
+              </tr>
+              `);
+              
+            }
+          }
+          
+          $('#resultados-informe').append(`
+              <tr>
+                <th>Promedio</th>
+                <th></th>
+                <th>${(totalMinutosEspera/contador).toFixed(2)}</th>
+                <th>${(totalMinutosConsulta/contador).toFixed(2)}</th>
+                <th>${(totalMinutos/contador).toFixed(2)}</th>
+              </tr>
+              `);
+          $('#spinner').hide();
+        }
+      
+      }
+
 </script>
 {% endblock %}
