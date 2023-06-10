@@ -3,6 +3,7 @@ from django.views.generic import TemplateView
 from django.http import JsonResponse
 from .models import Reporte, FiltroReporte
 from datetime import datetime
+from django.contrib.auth.decorators import login_required
 
 # Create your views here.
 
@@ -59,17 +60,20 @@ class Estrategico02(TemplateView):
         self.response['title']='Se han almacenado los parametros del reporte.'
         return JsonResponse(self.response)
     
-
+@login_required
 def bitacoraEstrategicos(request):
-    return render(request, 'BRE.html')
-
+    reportes = Reporte.objects.filter(tipo_reporte__in=[1,2])
+    for reporte in reportes:
+        reporte.filtros = reporte.filtroreporte_set.all()
+    return render(request, 'BRE.html', {'reportes': reportes})
+@login_required
 def bitacoraTacticos(request):
     reportes = Reporte.objects.filter(tipo_reporte__in=[3, 4, 5])
     for reporte in reportes:
         reporte.filtros = reporte.filtroreporte_set.all()
     return render(request, 'BRT.html', {'reportes': reportes})
 
-
+@login_required
 def bitacoraAdmin(request):
     reportes = Reporte.objects.all()
     for reporte in reportes:
