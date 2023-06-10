@@ -64,7 +64,11 @@ def bitacoraEstrategicos(request):
     return render(request, 'BRE.html')
 
 def bitacoraTacticos(request):
-    return render(request, 'BRT.html')
+    reportes = Reporte.objects.filter(tipo_reporte__in=[3, 4, 5])
+    for reporte in reportes:
+        reporte.filtros = reporte.filtroreporte_set.all()
+    return render(request, 'BRT.html', {'reportes': reportes})
+
 
 def bitacoraAdmin(request):
     reportes = Reporte.objects.all()
