@@ -41,7 +41,7 @@
                 <tr>
                     <td>{{ forloop.counter }}</td>
                     <td>{{ reporte.get_tipo_reporte_display }}</td>
-                    <td>{{ reporte.empleado_id }}</td>
+                    <td>{{ reporte.empleado.nombres }} {{ reporte.empleado.apellidos }}</td>
                     <td>{{ reporte.fecha_hora_reporte }}</td>
                     <td>
                       {% if reporte.filtroreporte_set.all %}
